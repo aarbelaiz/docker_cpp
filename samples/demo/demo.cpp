@@ -2,6 +2,6 @@
 
 int main()
 {
-	docker_cpp::A a;
+	docker_cpp::Docker a("localhost:8080");
 }
 
