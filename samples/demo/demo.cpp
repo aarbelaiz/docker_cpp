@@ -1,7 +1,13 @@
-#include <docker_cpp/docker.h>
+#include "docker_cpp/docker.h"
+
+#include <iostream>
 
 int main()
 {
-	docker_cpp::Docker a("localhost:8080");
+	docker_cpp::Docker docker("http://127.0.0.1:2375");
+	docker_cpp::imageList res;
+	docker.images(res);
+	std::cout << res[0].id << std::endl;
+	std::cout << res[0].sharedSize << std::endl;
 }
 
