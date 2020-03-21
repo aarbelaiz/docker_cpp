@@ -2,7 +2,7 @@
 #define _DOCKER_H
 
 #include "docker_types.h"
-#include "export.h"
+#include "docker_error.h"
 
 #include <string>
 
@@ -21,7 +21,7 @@ namespace docker_cpp
 		~Docker(){};
 
 		//////////// Connection
-		dockErr info();
+		DockerError info();
 		// Returns the used version for the Docker API
 		std::string version() { return "v1.40"; };
 
@@ -33,9 +33,8 @@ namespace docker_cpp
 		 * @param [in] all Show all images. Only images from a final layer (no children) are shown by default. (default: false)
 		 * @param [in] digests Show digest information as a RepoDigests field on each image. (default: false)
 		 */
-		dockErr images(imageList &result, bool all = false, bool digests=false);
-
-		dockErr buildImage(const std::string &id);
+		DockerError images(imageList &result, bool all = false, bool digests=false);
+		//dockErr buildImage(const std::string &id);
 
 		//////////// Containers
 		
@@ -46,7 +45,7 @@ namespace docker_cpp
 		 * @param limit Return this number of most recently created containers, including non-running ones.
 		 * @param size Return the size of container as fields SizeRw and SizeRootFs. (default: false)
 		 */
-		dockErr containers(containerList &result, bool all = false, int limit = -1, bool size = false);
+		DockerError containers(containerList &result, bool all = false, int limit = -1, bool size = false);
 		
 		/**
 		 * Start a container.
@@ -54,16 +53,16 @@ namespace docker_cpp
 		 * @param detachKeys Override the key sequence for detaching a container. Format is a single character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _.
 		 * @returns dockErr
 		 */
-		dockErr runContainer(const std::string &id, const std::string &detachKeys = "ctrl-c");
-		dockErr stopContainer(const std::string &id, int t = -1);
-		dockErr restartContainer(const std::string &id, int t = -1);
+		DockerError runContainer(const std::string &id, const std::string &detachKeys = "ctrl-c");
+		DockerError stopContainer(const std::string &id, int t = -1);
+		DockerError restartContainer(const std::string &id, int t = -1);
 		/**
 		 * Kill a container.
 		 * @param id ID or name of the container
 		 * @param signal Signal to send to the container as an integer or string (e.g. SIGINT)
 		 * @return dockErr
 		 */
-		dockErr killContainer(const std::string &id, const std::string &signal = "SIGKILL");
+		DockerError killContainer(const std::string &id, const std::string &signal = "SIGKILL");
 
 		//void listContainers();
 		//void runContainer();

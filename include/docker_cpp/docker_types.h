@@ -1,20 +1,21 @@
 #ifndef _DOCKER_TYPES_H
 #define _DOCKER_TYPES_H
 
+#include "export.h"
+
 #include <string>
 #include <vector>
 #include <memory>
 
 namespace docker_cpp
 {
-    enum dockErr {
+    enum DOCKER_CPP_API dockErr {
         DOCKER_OK = 0, //200, 2014
-        DOCKER_SERVER_ERROR = -1, //500
-        DOCKER_INPUT_PARAMETER_ERROR = -2, //400
-        DOCKER_NO_SUCH_CONTAINER = -3, //404
+        DOCKER_INFO = -1,
+        DOCKER_ERROR = -2, //500, 404, 200 
     };
 
-    struct ImageInfo {
+    struct DOCKER_CPP_API ImageInfo {
         std::string id;
         std::string parentId;
         std::vector<std::string> repoTags;

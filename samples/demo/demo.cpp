@@ -14,6 +14,7 @@ int main()
 	docker.containers(containers, true);
 	for(auto &c : containers) {
 		std::cout << c.id << std::endl;
+		std::cout << c.names[0] << std::endl;
 	}
 }
 
