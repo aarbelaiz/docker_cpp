@@ -9,5 +9,11 @@ int main()
 	docker.images(res);
 	std::cout << res[0].id << std::endl;
 	std::cout << res[0].sharedSize << std::endl;
+
+	docker_cpp::containerList containers;
+	docker.containers(containers, true);
+	for(auto &c : containers) {
+		std::cout << c.id << std::endl;
+	}
 }
 

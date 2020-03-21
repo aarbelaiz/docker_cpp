@@ -76,7 +76,7 @@ namespace docker_cpp
 
     struct ContainerInfo
     {
-        std::string Id; //!< The ID of this container
+        std::string id; //!< The ID of this container
         std::vector<std::string> names; //!< The names that this container has been given
         std::string image; //!< The name of the image used when creating this container
         std::string imageID; //!< The ID of the image that this container was created from
@@ -84,7 +84,7 @@ namespace docker_cpp
         std::int64_t created; //!< When the container was created
         std::vector<Port> ports; //!< The ports exposed by this container
         std::int64_t sizeRw; //!< The size of files that have been created or changed by this container
-        std::int64_t SizeRootFs; //!< The total size of all the files in this container
+        std::int64_t sizeRootFs; //!< The total size of all the files in this container
         std::vector<std::pair<std::string, std::string> > labels; //!< User-defined key/value metadata.
         std::string state; //!< The state of this container (e.g. Exited)
         std::string status; //!< Additional human-readable status of this container (e.g. Exit 0)

@@ -46,7 +46,7 @@ namespace docker_cpp
 		 * @param limit Return this number of most recently created containers, including non-running ones.
 		 * @param size Return the size of container as fields SizeRw and SizeRootFs. (default: false)
 		 */
-		dockErr containers(containerList &result, bool all = false, int limit = INT32_MAX, bool size = false);
+		dockErr containers(containerList &result, bool all = false, int limit = -1, bool size = false);
 		
 		/**
 		 * Start a container.
@@ -54,7 +54,7 @@ namespace docker_cpp
 		 * @param detachKeys Override the key sequence for detaching a container. Format is a single character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _.
 		 * @returns dockErr
 		 */
-		dockErr runContainer(const std::string &id, const std::string &detachKeys = "");
+		dockErr runContainer(const std::string &id, const std::string &detachKeys = "ctrl-c");
 		dockErr stopContainer(const std::string &id, int t = -1);
 		dockErr restartContainer(const std::string &id, int t = -1);
 		/**

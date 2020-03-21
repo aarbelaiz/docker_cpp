@@ -5,6 +5,8 @@
 #include <asl/String.h>
 #include <asl/Http.h>
 
+#include <asl/JSON.h>
+
 inline const char * const BoolToText(bool b)
 {
   return b ? "true" : "false";
@@ -38,9 +40,33 @@ dockErr Docker::images(imageList &result, bool all, bool digests)
 	return DOCKER_OK;
 }
 
+dockErr Docker::containers(containerList &result, bool all, int limit, bool size)
+{
+	std::string url = _endpoint + "/containers/json?all=" + BoolToText(all) + "?size=" + BoolToText(size);
+	if (limit > 0) url += url + "?limit=" + std::to_string(limit);
+	auto res = Http::get(asl::String(url.c_str()));
+	if (!res.ok()){
+		std::cout << res.code() << std::endl;
+		return DOCKER_SERVER_ERROR;
+	}
+	asl::String filteredResponse = res.text().replace("\\\"", ""); // AAA: scaping is necessary for commands
+	asl::Var data = asl::Json::decode(filteredResponse);
+	_parseContainers(&data, result);
+	return DOCKER_OK;
+}
+
+dockErr Docker::runContainer(const std::string &id, const std::string &detachKeys)
+{
+	const std::string url = _endpoint + "/containers/run/" + id + "/json?detachKeys=" + detachKeys;
+	auto res = Http::get(asl::String(url.c_str()));
+	if (!res.ok()) return DOCKER_SERVER_ERROR;
+	return DOCKER_OK;
+}
+
+
 void Docker::_parseImages(Var *in, imageList &out)
 {
-	foreach(Var& image, *in)
+	foreach(asl::Var& image, *in)
 	{
 		ImageInfo info;
 		info.id = *image["Id"].toString();
@@ -57,14 +83,92 @@ void Docker::_parseImages(Var *in, imageList &out)
 		info.size = image["Size"];
 		info.virtualSize = image["VirtualSize"];
 		info.sharedSize = image["SharedSize"];
-		for(auto& l : image["Labels"].object())
-		{
-			auto entry = std::make_pair<std::string, std::string>(*l.key, *l.value.toString());
-			info.labels.push_back(entry);
+		if (image.has("Labels")) {
+			for(auto& l : image["Labels"].object())
+			{
+				auto entry = std::make_pair<std::string, std::string>(*l.key, *l.value.toString());
+				info.labels.push_back(entry);
+			}
 		}
 		info.containers = image["Containers"];
 		out.push_back(info);
 	}
 }
+
+void Docker::_parseContainers(Var *in, containerList &out)
+{
+	std::cout << "T" << std::endl;
+	foreach(asl::Var &container, *in) {
+		ContainerInfo info;
+		std::cout << *container["Id"].toString() << std::endl;
+		info.id = *container["Id"].toString();
+		foreach(auto name, container["Names"]) {
+			info.names.push_back(*name.toString());
+		}
+		info.image = *container["Image"].toString();
+		info.imageID = *container["ImageID"].toString();
+		info.command = *container["Command"].toString();
+		info.created = static_cast<asl::Long>(container["created"]);
+		if (container.has("Ports")) {
+			foreach(auto portInfo, container["Ports"]) {
+				Port port;
+				_parsePort(&portInfo, port);
+				info.ports.push_back(port);	
+			}
+		}
+		info.sizeRw = static_cast<asl::Long>(container["SizeRw"]);
+		info.sizeRootFs = static_cast<asl::Long>(container["SizeRootFs"]);
+		if (container.has("Labels")) {
+			for(auto& l : container["Labels"].object())
+			{
+				auto entry = std::make_pair(*l.key, *l.value.toString());
+				info.labels.push_back(entry);
+			}
+		}
+		info.state = *container["State"].toString();
+		info.status = *container["Status"].toString();
+		if (container.has("HostConfig")) {
+			for(auto& c : container["HostConfig"].object()){
+				info.hostConfig = std::make_pair(*c.key, *c.value.toString());
+			}
+		}
+		if (container.has("NetworkSettings")) {
+			NetworkSettings networkSettings;
+			_parseNetwork(&container["NetworkSettings"], networkSettings);
+			info.networkSettings = networkSettings;
+		}
+		out.push_back(info);
+	}
+}
+
+void Docker::_parsePort(asl::Var *in, Port &out)
+{
+	out.ip = *((*in)["Ip"].toString());
+	out.privatePort = *((*in)["PrivatePort"].toString());
+	out.publicPort = *((*in)["PublicPort"].toString());
+	out.type = *((*in)["Type"].toString());
+}
+
+void Docker::_parseNetwork(asl::Var *in, NetworkSettings &out)
+{
+	if (in->has("networks")) {
+		foreach(auto network, (*in)["Networks"]) {
+			EndpointSettings endpoint;
+			foreach(auto link, network["Links"]) {
+				endpoint.links.push_back(*link.toString());
+			}
+			foreach(auto alias, network["Aliases"]) {
+				endpoint.links.push_back(*alias.toString());
+			}
+			endpoint.networkID = *network["NetworkID"].toString();
+			endpoint.endpointID = *network["EndpointID"].toString();
+			endpoint.gateway = *network["Gateway"];
+			endpoint.ipAddress = *network["IpAddress"].toString();
+			endpoint.ipPrefixLen = network["IpPrefixLen"];
+			out.networks.push_back(std::make_pair(*network.toString(), endpoint));
+		}
+	}
+}
+
 
 }
