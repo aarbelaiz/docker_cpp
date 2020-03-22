@@ -9,9 +9,29 @@ namespace docker_cpp
         this->apiErrorCode = codeAPI;
     }
 
-    bool DockerError::isValid()
+    bool DockerError::isOk()
     {
         return errorCode == DOCKER_OK;
+    }
+
+    bool DockerError::isError()
+    {
+        return errorCode == DOCKER_ERROR;
+    }
+
+    DockerError DockerError::OK()
+    {
+        return DockerError(DOCKER_OK, "", 200);
+    }
+
+    DockerError DockerError::INFO(const std::string& msg, int codeAPI)
+    {
+        return DockerError(DOCKER_INFO, msg, codeAPI);
+    }
+
+    DockerError DockerError::ERROR(const std::string& msg, int codeAPI)
+    {
+        return DockerError(DOCKER_ERROR, msg, codeAPI);
     }
 
     std::ostream& operator<<(std::ostream& os, const DockerError& err)

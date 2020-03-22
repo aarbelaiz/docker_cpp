@@ -1,10 +1,9 @@
-#include <docker_cpp/docker.h>
+#include "docker_cpp/docker.h"
 
 #include <iostream>
 
 #include <asl/String.h>
 #include <asl/Http.h>
-
 #include <asl/JSON.h>
 
 inline const char * const BoolToText(bool b)
@@ -32,11 +31,11 @@ DockerError Docker::images(imageList &result, bool all, bool digests)
 	const std::string url = _endpoint + "/images/json?all=" + BoolToText(all) + "?digests=" + BoolToText(digests);
 	auto res = Http::get(asl::String(url.c_str()));
 	if (!res.ok()){
-		return DockerError(DOCKER_ERROR, *res.json()["message"].toString(), res.code());
+		return DockerError::ERROR(*res.json()["message"].toString(), res.code());
 	}
 	auto data = res.json();
 	_parseImages(&data, result);
-	return DockerError(DOCKER_OK, "", 200);
+	return DockerError::OK();
 }
 
 DockerError Docker::containers(containerList &result, bool all, int limit, bool size)
@@ -45,20 +44,20 @@ DockerError Docker::containers(containerList &result, bool all, int limit, bool 
 	if (limit > 0) url += url + "?limit=" + std::to_string(limit);
 	auto res = Http::get(asl::String(url.c_str()));
 	if (!res.ok()){
-		return DockerError(DOCKER_ERROR, *res.json()["message"].toString(), res.code());
+		return DockerError::ERROR(*res.json()["message"].toString(), res.code());
 	}
 	asl::String filteredResponse = res.text().replace("\\\"", ""); // AAA: scaping is necessary for commands
 	asl::Var data = asl::Json::decode(filteredResponse);
 	_parseContainers(&data, result);
-	return DockerError(DOCKER_OK, "", 200);
+	return DockerError::OK();
 }
 
 DockerError Docker::runContainer(const std::string &id, const std::string &detachKeys)
 {
 	const std::string url = _endpoint + "/containers/run/" + id + "/json?detachKeys=" + detachKeys;
 	auto res = Http::get(asl::String(url.c_str()));
-	if (!res.ok()) return DockerError(DOCKER_ERROR, *res.json()["message"].toString(), res.code());
-	return DockerError(DOCKER_OK, "", 200);
+	if (!res.ok()) return DockerError::ERROR(*res.json()["message"].toString(), res.code());
+	return DockerError::OK();
 }
 
 
