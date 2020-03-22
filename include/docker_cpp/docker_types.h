@@ -24,13 +24,13 @@ namespace docker_cpp
         int size;
         int virtualSize;
         int sharedSize;
-        std::vector<std::pair<std::string, std::string> > labels; //!< User-defined key/value strins
+        std::vector<std::pair<std::string, std::string> > labels; //!< User-defined key/value strings
         int containers;
     };
 
     using imageList = std::vector<ImageInfo>;
 
-    struct Port {
+    struct DOCKER_CPP_API Port {
         std::string ip; //!< Host IP address that the container's port is mapped to
         std::string privatePort; //!< Port on the container
         std::string publicPort; //!< Port exposed on the host
@@ -38,13 +38,13 @@ namespace docker_cpp
     };
 
     // EndpointIPAMConfig represents an endpoint's IPAM configuration.
-    struct IPAMConfig {
+    struct DOCKER_CPP_API IPAMConfig {
         std::string ipV4Address;
         std::string ipV6Address;
         std::vector<std::string> linkLocalIps;
     };
 
-    struct EndpointSettings {
+    struct DOCKER_CPP_API EndpointSettings {
         std::unique_ptr<IPAMConfig> *ipamConfig;
         std::vector<std::string> links;
         std::vector<std::string> aliases;
@@ -61,11 +61,11 @@ namespace docker_cpp
     };
 
     //Configuration for a network endpoint.
-    struct NetworkSettings {
+    struct DOCKER_CPP_API NetworkSettings {
         std::vector<std::pair<std::string, EndpointSettings> >networks;
     };
 
-    struct Mount
+    struct DOCKER_CPP_API Mount
     {
         std::string target; //!< Container path.
         std::string source; //!< Mount source (e.g. a volume name, a host path).
@@ -75,7 +75,7 @@ namespace docker_cpp
     };
     
 
-    struct ContainerInfo
+    struct DOCKER_CPP_API ContainerInfo
     {
         std::string id; //!< The ID of this container
         std::vector<std::string> names; //!< The names that this container has been given

@@ -8,6 +8,7 @@
 
 namespace asl {
 	class Var;
+	class HttpResponse;
 }
 
 namespace docker_cpp
@@ -58,7 +59,7 @@ namespace docker_cpp
 		 * @param detachKeys Override the key sequence for detaching a container. Format is a single character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _.
 		 * @returns DockerError
 		 */
-		DockerError runContainer(const std::string &id, const std::string &detachKeys = "ctrl-c");
+		DockerError startContainer(const std::string &id, const std::string &detachKeys = "ctrl-c");
 		
 		/**
 		 * Stop a container.
@@ -79,21 +80,19 @@ namespace docker_cpp
 		/**
 		 * Kill a container.
 		 * @param id ID or name of the container
-		 * @param signal Signal to send to the container as an integer or string (e.g. SIGINT)
+		 * @param signal Signal to send to the container as an integer or string e.g. SIGINT (defauult: SIGKILL)
 		 * @return DockerError
 		 */
 		DockerError killContainer(const std::string &id, const std::string &signal = "SIGKILL");
 
 		////////// Helper functions
+
 		bool checkConnection();
 
 	private:
 		std::string _endpoint;
 
-		void _parseImages(asl::Var *in, imageList &out);
-		void _parseContainers(asl::Var *in, containerList &out);
-		void _parsePort(asl::Var *in, Port &out);
-		void _parseNetwork(asl::Var *in, NetworkSettings &out);
+		DockerError _checkError(asl::HttpResponse *res);
 	};
 }
 
