@@ -90,7 +90,7 @@ void parsePort(asl::Var *in, Port &out)
 
 void parseNetwork(asl::Var *in, NetworkSettings &out)
 {
-	if (in->has("networks")) {
+	if (in->has("Networks")) {
 		foreach(auto network, (*in)["Networks"]) {
 			EndpointSettings endpoint;
 			foreach(auto link, network["Links"]) {
@@ -107,6 +107,27 @@ void parseNetwork(asl::Var *in, NetworkSettings &out)
 			out.networks.push_back(std::make_pair(*network.toString(), endpoint));
 		}
 	}
+}
+
+void parseVersionInfo(asl::Var *in, VersionInfo &out)
+{
+    if (in->has("Components")){
+        foreach(asl::Var& component, (*in)["Components"]) {
+            Component comp;
+            comp.name = *component["Name"].toString();
+            comp.version = *component["Version"].toString();
+            out.components.push_back(comp);
+        }
+    }
+    out.version = *((*in)["Version"].toString());
+    out.apiVersion = *((*in)["ApiVersion"].toString());
+    out.minApiVersion = *((*in)["MinApiVersion"].toString());
+    out.gitCommit = *((*in)["GitCommit"].toString());
+    out.os = *((*in)["Os"].toString());
+    out.arch = *((*in)["Arch"].toString());
+    out.kernelVersion = *((*in)["KernelVersion"].toString());
+    out.experimental = (*in)["Experimental"];
+    out.buildTime = *((*in)["BuildTime"].toString());
 }
 
 }

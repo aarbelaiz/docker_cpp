@@ -94,6 +94,25 @@ namespace docker_cpp
     };
 
     using containerList = std::vector<ContainerInfo>;
+
+    struct DOCKER_CPP_API Component {
+        std::string name;
+        std::string version;
+    };
+    struct DOCKER_CPP_API VersionInfo {
+        std::vector<Component> components;
+        std::string version;
+        std::string apiVersion;
+        std::string minApiVersion;
+        std::string gitCommit;
+        std::string goVersion;
+        std::string os;
+        std::string arch;
+        std::string kernelVersion;
+        bool experimental;
+        std::string buildTime;
+    };
+
     
 } // namespace docker_cpp
 

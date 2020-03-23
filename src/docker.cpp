@@ -19,7 +19,7 @@ namespace docker_cpp {
 Docker::Docker(const std::string &uri)
 {
 	std::cout << uri << std::endl;
-	_endpoint = uri;
+	_endpoint = uri + "/v1.40";
 }
 
 Docker::Docker(const std::string &ip, const unsigned int port)
@@ -27,9 +27,22 @@ Docker::Docker(const std::string &ip, const unsigned int port)
 	Docker("http://"+ip+std::to_string(port));
 }
 
-DockerError Docker::info()
+DockerError Docker::version(VersionInfo &result)
 {
-	return DockerError::OK();
+	const std::string url = _endpoint + "/version/json";
+	auto res = Http::get(asl::String(url.c_str()));
+	DockerError err = _checkError(&res);
+	if (!err.isOk()) return err;
+	auto data = res.json();
+	parseVersionInfo(&data, result);
+	return err;
+}
+
+DockerError Docker::ping()
+{
+	const std::string url = _endpoint + "/ping";
+	auto res = Http::get(asl::String(url.c_str()));
+	return _checkError(&res);
 }
 
 DockerError Docker::images(imageList &result, bool all, bool digests)
@@ -86,7 +99,7 @@ DockerError Docker::killContainer(const std::string &id, const std::string &sign
 
 bool Docker::checkConnection()
 {
-	auto r = this->info();
+	auto r = this->ping();
 	return r.isOk();
 }
 

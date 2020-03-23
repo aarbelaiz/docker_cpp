@@ -20,14 +20,19 @@ namespace docker_cpp
 		Docker(const std::string &ip, const unsigned int port);
 		~Docker(){};
 
-		//////////// Info
+		//////////// System
 
-		DockerError info();
+		/**
+		 * Returns the version of Docker that is running and various information about the system that Docker is running on.
+		 * @param [in,out] result Information (VersioInfo) about docker and the system.
+		 * @returns DockerError
+		 */
+		DockerError version(VersionInfo &result);
 
-		//////////// Version
-
-		// Returns the used version for the Docker API
-		std::string version() { return "v1.40"; };
+		/**
+		 * Dummy endpoint ot check connection.
+		 */
+		DockerError ping();
 
 		//////////// Images
 
@@ -40,50 +45,68 @@ namespace docker_cpp
 		 */
 		DockerError images(imageList &result, bool all = false, bool digests=false);
 		//DockerError buildImage(const std::string &id);
+		
+		/**
+		 * 
+		 */
+		DockerError tagImage(const std::string &name, const std::string &repo, const std::string &tag);
+		//DockerError removeImage(const std::string &name, bool force = false, bool noprune = false);
 
 		//////////// Containers
 		
 		/**
 		 * Returns a list of containers.
-		 * @param result A list of information (containerInfo) of each container in the server
-		 * @param all Return all containers. By default, only running containers are shown (default: false)
-		 * @param limit Return this number of most recently created containers, including non-running ones
-		 * @param size Return the size of container as fields SizeRw and SizeRootFs. (default: false)
+		 * @param [in,out] result A list of information (containerInfo) of each container in the server
+		 * @param [in] all Return all containers. By default, only running containers are shown (default: false)
+		 * @param [in] limit Return this number of most recently created containers, including non-running ones
+		 * @param [in] size Return the size of container as fields SizeRw and SizeRootFs. (default: false)
 		 * @returns DockerError
 		 */
 		DockerError containers(containerList &result, bool all = false, int limit = -1, bool size = false);
-		
+		//DockerError createContainer(const std::string &name);
+
 		/**
 		 * Start a container.
-		 * @param id ID or name of the container
-		 * @param detachKeys Override the key sequence for detaching a container. Format is a single character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _.
+		 * @param [in] id ID or name of the container
+		 * @param [in] detachKeys Override the key sequence for detaching a container. Format is a single character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _.
 		 * @returns DockerError
 		 */
 		DockerError startContainer(const std::string &id, const std::string &detachKeys = "ctrl-c");
 		
 		/**
 		 * Stop a container.
-		 * @param id ID or name of the container
-		 * @param t Number of seconds to wait before killing the container
+		 * @param [in] id ID or name of the container
+		 * @param [in] t Number of seconds to wait before killing the container
 		 * @returns DockerError
 		 */
 		DockerError stopContainer(const std::string &id, int t = -1);
 		
 		/**
 		 * Restart a container.
-		 * @param id ID or name of the container
-		 * @param t Number of seconds to wait before killing the container
+		 * @param [in] id ID or name of the container
+		 * @param [in] t Number of seconds to wait before killing the container
 		 * @returns DockerError
 		 */
 		DockerError restartContainer(const std::string &id, int t = -1);
 		
 		/**
 		 * Kill a container.
-		 * @param id ID or name of the container
-		 * @param signal Signal to send to the container as an integer or string e.g. SIGINT (defauult: SIGKILL)
+		 * @param [in] id ID or name of the container
+		 * @param [in] signal Signal to send to the container as an integer or string e.g. SIGINT (defauult: SIGKILL)
 		 * @return DockerError
 		 */
 		DockerError killContainer(const std::string &id, const std::string &signal = "SIGKILL");
+
+		//DockerError renameContainer(const std::string &id, const std::string &name);
+		//DockerError waitContainer(const std::string &id, const std::string &condition = "not-running");
+		//DockerError removeContainer(const std::string &id, bool v = false, bool force = false, bool link = false);
+
+		////////// Exec
+
+		//Run a command inside a running container.
+		//DockerError createExecInstance(const std::string &id);
+		//DockerError startExecInstance(const std::string &id, bool detach = true, bool tty = false);
+		//DockerError inspectInstance(const std::string &id);
 
 		////////// Helper functions
 

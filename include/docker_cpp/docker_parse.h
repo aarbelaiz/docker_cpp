@@ -12,7 +12,8 @@ namespace docker_cpp
     void parseImages(asl::Var *in, imageList &out);
     void parseContainers(asl::Var *in, containerList &out);
     void parsePort(asl::Var *in, Port &out);
-    void parseNetwork(asl::Var *in, NetworkSettings &out); 
+    void parseNetwork(asl::Var *in, NetworkSettings &out);
+    void parseVersionInfo(asl::Var *in, VersionInfo &out);
 } // namespace docker_cpp
 
 

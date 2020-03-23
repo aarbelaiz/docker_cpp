@@ -6,7 +6,6 @@
 #include <iostream>
 
 namespace docker_cpp {
-
     class DOCKER_CPP_API DockerError {
         public:
             DockerError(dockErr code, const std::string& msg, int codeAPI);
