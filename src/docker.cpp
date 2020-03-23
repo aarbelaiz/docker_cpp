@@ -7,12 +7,7 @@
 #include <asl/Http.h>
 #include <asl/JSON.h>
 
-inline const char * const BoolToText(bool b)
-{
-  return b ? "true" : "false";
-}
-
-using namespace asl;
+inline const char * const BoolToText(bool b) { return b ? "true" : "false"; }
 
 namespace docker_cpp {
 
@@ -30,7 +25,7 @@ Docker::Docker(const std::string &ip, const unsigned int port)
 DockerError Docker::version(VersionInfo &result)
 {
 	const std::string url = _endpoint + "/version/json";
-	auto res = Http::get(asl::String(url.c_str()));
+	auto res = asl::Http::get(asl::String(url.c_str()));
 	DockerError err = _checkError(&res);
 	if (!err.isOk()) return err;
 	auto data = res.json();
@@ -41,14 +36,14 @@ DockerError Docker::version(VersionInfo &result)
 DockerError Docker::ping()
 {
 	const std::string url = _endpoint + "/ping";
-	auto res = Http::get(asl::String(url.c_str()));
+	auto res = asl::Http::get(asl::String(url.c_str()));
 	return _checkError(&res);
 }
 
 DockerError Docker::images(imageList &result, bool all, bool digests)
 {
 	const std::string url = _endpoint + "/images/json?all=" + BoolToText(all) + "?digests=" + BoolToText(digests);
-	auto res = Http::get(asl::String(url.c_str()));
+	auto res = asl::Http::get(asl::String(url.c_str()));
 	DockerError err = _checkError(&res);
 	if (!err.isOk()) return err;
 	auto data = res.json();
@@ -56,11 +51,27 @@ DockerError Docker::images(imageList &result, bool all, bool digests)
 	return err;
 }
 
+DockerError Docker::tagImage(const std::string &name, const std::string &repo, const std::string &tag)
+{
+	std::string url = _endpoint + "/images/" + name + "/tag/json";
+	if (!repo.empty()) url += "?repo=" + repo;
+	if (!tag.empty()) url += "?tag=" + tag;
+	auto res = asl::Http::post(asl::String(url.c_str()), "");
+	return _checkError(&res);
+}
+
+DockerError Docker::removeImage(const std::string &name, bool force, bool noprune)
+{
+	std::string url = _endpoint + "/images/" + name + "/json?force=" + BoolToText(force) + "?noprune=" + BoolToText(noprune);
+	auto res = asl::Http::delet(asl::String(url.c_str()));
+	return _checkError(&res);
+}
+
 DockerError Docker::containers(containerList &result, bool all, int limit, bool size)
 {
 	std::string url = _endpoint + "/containers/json?all=" + BoolToText(all) + "?size=" + BoolToText(size);
 	if (limit > 0) url += url + "?limit=" + std::to_string(limit);
-	auto res = Http::get(asl::String(url.c_str()));
+	auto res = asl::Http::get(asl::String(url.c_str()));
 	DockerError err = _checkError(&res);
 	if (!err.isOk()) return err;
 	asl::String filteredResponse = res.text().replace("\\\"", ""); // AAA: scaping is necessary for commands
@@ -72,28 +83,51 @@ DockerError Docker::containers(containerList &result, bool all, int limit, bool 
 DockerError Docker::startContainer(const std::string &id, const std::string &detachKeys)
 {
 	const std::string url = _endpoint + "/containers/" + id + "/start/json?detachKeys=" + detachKeys;
-	auto res = Http::get(asl::String(url.c_str()));
+	auto res = asl::Http::post(asl::String(url.c_str()), "");
 	return _checkError(&res);
 }
 
 DockerError Docker::stopContainer(const std::string &id, int t)
 {
-	const std::string url = _endpoint + "/containers/" + id + "/stop/json?t=" + std::to_string(t);
-	auto res = Http::get(asl::String(url.c_str()));
+	std::string url = _endpoint + "/containers/" + id + "/stop/json";
+	if (t > 0) url += "?t=" + std::to_string(t);
+	auto res = asl::Http::post(asl::String(url.c_str()), "");
 	return _checkError(&res);
 }
 
 DockerError Docker::restartContainer(const std::string &id, int t)
 {
-	const std::string url = _endpoint + "/containers/" + id + "/restart/json?t=" + std::to_string(t);
-	auto res = Http::get(asl::String(url.c_str()));
+	std::string url = _endpoint + "/containers/" + id + "/restart/json";
+	if (t > 0) url += "?t=" + std::to_string(t);
+	auto res = asl::Http::post(asl::String(url.c_str()), "");
 	return _checkError(&res);
 }
 
 DockerError Docker::killContainer(const std::string &id, const std::string &signal)
 {
-	const std::string url = _endpoint + "/containers/run/" + id + "/kill/json?signal=" + signal;
-	auto res = Http::get(asl::String(url.c_str()));
+	const std::string url = _endpoint + "/containers/" + id + "/kill/json?signal=" + signal;
+	auto res = asl::Http::post(asl::String(url.c_str()), "");
+	return _checkError(&res);
+}
+
+DockerError Docker::renameContainer(const std::string &id, const std::string &name)
+{
+	const std::string url = _endpoint + "/containers/" + id + "/rename/json?name=" + name;
+	auto res = asl::Http::post(asl::String(url.c_str()), "");
+	return _checkError(&res);
+}
+
+DockerError Docker::waitContainer(const std::string &id, const std::string &condition)
+{
+	const std::string url = _endpoint + "/containers/" + id + "/wait/json?condition=" + condition;
+	auto res = asl::Http::post(asl::String(url.c_str()), "");
+	return _checkError(&res);
+}
+
+DockerError Docker::removeContainer(const std::string &id, bool v, bool force, bool link)
+{
+	const std::string url = _endpoint + "/containers/" + id + "/json?v=" + BoolToText(v) + "?force=" + BoolToText(force) + "?link=" + BoolToText(link);
+	auto res = asl::Http::delet(asl::String(url.c_str()), "");
 	return _checkError(&res);
 }
 

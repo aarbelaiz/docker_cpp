@@ -7,7 +7,6 @@
 #include <string>
 
 namespace asl {
-	class Var;
 	class HttpResponse;
 }
 
@@ -30,7 +29,7 @@ namespace docker_cpp
 		DockerError version(VersionInfo &result);
 
 		/**
-		 * Dummy endpoint ot check connection.
+		 * Dummy endpoint to check connection with API Engine
 		 */
 		DockerError ping();
 
@@ -38,19 +37,31 @@ namespace docker_cpp
 
 		/**
 		 * Returns a list of images on the server.
-		 * @param [in,out] result A list of information (imageInfo) of each image in the server.
-		 * @param [in] all Show all images. Only images from a final layer (no children) are shown by default. (default: false)
-		 * @param [in] digests Show digest information as a RepoDigests field on each image. (default: false)
+		 * @param [in,out] result A list of information (imageInfo) of each image in the server
+		 * @param [in] all Show all images. Only images from a final layer (no children) are shown by default (default: false)
+		 * @param [in] digests Show digest information as a RepoDigests field on each image (default: false)
 		 * @returns DockerError
 		 */
 		DockerError images(imageList &result, bool all = false, bool digests=false);
 		//DockerError buildImage(const std::string &id);
 		
 		/**
-		 * 
+		 * Tag an image so that it becomes part of a repository.
+		 * @param [in] name Image name or ID to tag
+		 * @param [in] repo The repository to tag in. E.g. "someuser/someimage"
+		 * @param [in] tag The name of the new tag
+		 * @returns DockerError
 		 */
 		DockerError tagImage(const std::string &name, const std::string &repo, const std::string &tag);
-		//DockerError removeImage(const std::string &name, bool force = false, bool noprune = false);
+
+		/**
+		 * Remove an image, along with any untagged parent images that were referenced by that image.
+		 * Images can't be removed if they have descendant images, are being used by a running container or are being used by a build.
+		 * @param [in] name Image name or ID to tag
+		 * @param [in] force Remove the image even if it is being used by stopped containers or has other tags (default: false)
+		 * @param [in] noprune Do not delete untagged parent images (default: false)
+		 */
+		DockerError removeImage(const std::string &name, bool force = false, bool noprune = false);
 
 		//////////// Containers
 		
@@ -93,13 +104,35 @@ namespace docker_cpp
 		 * Kill a container.
 		 * @param [in] id ID or name of the container
 		 * @param [in] signal Signal to send to the container as an integer or string e.g. SIGINT (defauult: SIGKILL)
-		 * @return DockerError
+		 * @returns DockerError
 		 */
 		DockerError killContainer(const std::string &id, const std::string &signal = "SIGKILL");
 
-		//DockerError renameContainer(const std::string &id, const std::string &name);
-		//DockerError waitContainer(const std::string &id, const std::string &condition = "not-running");
-		//DockerError removeContainer(const std::string &id, bool v = false, bool force = false, bool link = false);
+		/**
+		 * Rename a container.
+		 * @param [in] id ID or name of the container
+		 * @param [in] name New name for the container
+		 * @returns DockerError
+		 */
+		DockerError renameContainer(const std::string &id, const std::string &name);
+		
+		/**
+		 * Block until a container stops, then returns the exit code.
+		 * @param [in] id ID or name of the container
+		 * @param [in] condition Wait until a container state reaches the given condition, either 'not-running' (default), 'next-exit', or 'removed'.
+		 * @returns DockerError
+		 */
+		DockerError waitContainer(const std::string &id, const std::string &condition = "not-running");
+		
+		/**
+		 * Remove a container.
+		 * @param [in] id ID or name of the container
+		 * @param [in] v Remove the volumes associated with the container (default: false)
+		 * @param [in] force If the container is running, kill it before removing it (default: false)
+		 * @param [in] link If the container is running, kill it before removing it (default: false)
+		 * @returns DockerError
+		 */
+		DockerError removeContainer(const std::string &id, bool v = false, bool force = false, bool link = false);
 
 		////////// Exec
 
