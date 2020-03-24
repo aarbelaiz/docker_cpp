@@ -130,4 +130,38 @@ void parseVersionInfo(asl::Var *in, VersionInfo &out)
     out.buildTime = *((*in)["BuildTime"].toString());
 }
 
+void parseWaitInfo(asl::Var *in, WaitInfo &out)
+{
+	out.statusCode = (*in)["StatusCode"];
+	if (in->has("Error")){
+		out.errorMsg = *((*in)["Error"]["Message"].toString());
+	}
+}
+
+void parseExec(asl::Var *in, ExecInfo &out)
+{
+	out.canRemove = (*in)["CanRemove"];
+	out.detachKeys = *((*in)["DetachKeys"].toString());
+	out.id = *((*in)["Id"].toString());
+	out.running = (*in)["Running"];
+	if (in->has("ProcessConfig")) {
+		ProcessConfig process;
+		asl::Var p = (*in)["ProcessConfig"];
+		process.privileged = p["privileged"];
+		process.user = *p["user"].toString();
+		process.tty = p["tty"];
+		process.entrypoint = *p["entrypoint"].toString();
+		foreach(asl::Var &arg, p["arguments"])
+		{
+			process.arguments.push_back(*arg.toString());
+		}
+		out.processConfig = process;
+	}
+	out.openStdin = (*in)["OpenStdin"];
+	out.openStderr = (*in)["OpenStderr"];
+	out.openStdout = (*in)["OpenStdout"];
+	out.containerID = *((*in)["ContainerID"].toString());
+	out.pid = (*in)["Pid"];
+}
+
 }

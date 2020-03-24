@@ -22,6 +22,8 @@ Docker::Docker(const std::string &ip, const unsigned int port)
 	Docker("http://"+ip+std::to_string(port));
 }
 
+//////////////////// SYSTEM //////////////////////////
+
 DockerError Docker::version(VersionInfo &result)
 {
 	const std::string url = _endpoint + "/version/json";
@@ -35,10 +37,12 @@ DockerError Docker::version(VersionInfo &result)
 
 DockerError Docker::ping()
 {
-	const std::string url = _endpoint + "/ping";
+	const std::string url = _endpoint + "/_ping";
 	auto res = asl::Http::get(asl::String(url.c_str()));
 	return _checkError(&res);
 }
+
+//////////////////// IMAGES //////////////////////////
 
 DockerError Docker::images(imageList &result, bool all, bool digests)
 {
@@ -66,6 +70,8 @@ DockerError Docker::removeImage(const std::string &name, bool force, bool noprun
 	auto res = asl::Http::delet(asl::String(url.c_str()));
 	return _checkError(&res);
 }
+
+//////////////////// CONTAINERS //////////////////////////
 
 DockerError Docker::containers(containerList &result, bool all, int limit, bool size)
 {
@@ -117,18 +123,61 @@ DockerError Docker::renameContainer(const std::string &id, const std::string &na
 	return _checkError(&res);
 }
 
-DockerError Docker::waitContainer(const std::string &id, const std::string &condition)
+DockerError Docker::waitContainer(const std::string &id, WaitInfo &result, const std::string &condition)
 {
 	const std::string url = _endpoint + "/containers/" + id + "/wait/json?condition=" + condition;
 	auto res = asl::Http::post(asl::String(url.c_str()), "");
-	return _checkError(&res);
+	DockerError err = _checkError(&res);
+	if (err.isError()) return err;
+	auto data = res.json();
+	parseWaitInfo(&data, result);
+	return err;
 }
 
 DockerError Docker::removeContainer(const std::string &id, bool v, bool force, bool link)
 {
 	const std::string url = _endpoint + "/containers/" + id + "/json?v=" + BoolToText(v) + "?force=" + BoolToText(force) + "?link=" + BoolToText(link);
-	auto res = asl::Http::delet(asl::String(url.c_str()), "");
+	auto res = asl::Http::delet(asl::String(url.c_str()));
 	return _checkError(&res);
+}
+
+
+DockerError Docker::createExecInstance(const std::string &id, ExecConfig &config, std::string &execId)
+{
+	const std::string url = _endpoint + "/containers/" + id + "/exec";
+	// TODO: create body
+	auto res = asl::Http::post(asl::String(url.c_str()), "body");
+	DockerError err = _checkError(&res);
+	if (err.isError()) return err;
+	auto data = res.json();
+	execId = *data["Id"].toString();
+	return err;
+}
+
+DockerError Docker::startExecInstance(const std::string &id, bool detach, bool tty)
+{
+	const std::string url = _endpoint + "/exec/" + id + "/start";
+	// TODO: create body
+	auto res = asl::Http::post(asl::String(url.c_str()), "body");
+	return _checkError(&res);
+}
+
+DockerError Docker::resizeExecInstance(const std::string &id, int h, int w)
+{
+	const std::string url = _endpoint + "/exec/" + id + "/resize?h=" + std::to_string(h) + "?w=" + std::to_string(w);
+	auto res = asl::Http::post(asl::String(url.c_str()), "");
+	return _checkError(&res);
+}
+
+DockerError Docker::inspectInstance(const std::string &id, ExecInfo &result)
+{
+	const std::string url = _endpoint + "/exec/" + id + "/json";
+	auto res = asl::Http::get(asl::String(url.c_str()));
+	DockerError err = _checkError(&res);
+	if (err.isError()) return err;
+	asl::Var data = asl::Json::decode(res.text().replace("\\\"", "")); // AAA: scaping is necessary for commands
+	parseExec(&data, result);
+	return err;
 }
 
 bool Docker::checkConnection()
@@ -148,7 +197,7 @@ DockerError Docker::_checkError(asl::HttpResponse *res)
 	}else{
 		std::string msg = *(res->json()["message"].toString());
 		return DockerError::ERROR(msg, code);
-	}	
+	}
 }
 
 }

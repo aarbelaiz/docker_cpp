@@ -113,6 +113,48 @@ namespace docker_cpp
         std::string buildTime;
     };
 
+    struct DOCKER_CPP_API WaitInfo {
+        int statusCode; //!< Exit code of the container
+        std::string errorMsg; //!< Details of an error
+    };
+
+    //////////// Exec
+
+    struct DOCKER_CPP_API ProcessConfig {
+        bool privileged;
+        std::string user;
+        bool tty;
+        std::string entrypoint;
+        std::vector<std::string> arguments;
+    };
+
+    struct DOCKER_CPP_API ExecInfo {
+        bool canRemove;
+        std::string detachKeys;
+        std::string id;
+        bool running;
+        int exitCode;
+        ProcessConfig processConfig;
+        bool openStdin;
+        bool openStderr;
+        bool openStdout;
+        std::string containerID;
+        int pid; //!< The system process ID for the exec process
+    };
+
+    struct DOCKER_CPP_API ExecConfig {
+        bool attachStdin = false; //!< Attach to stdin of the exec command
+        bool attachStdout = true; //!< Attach to stdout of the exec command
+        bool attachStderr = true; //!< Attach to stderr of the exec command  
+        std::string detachKeys = "ctrl-p,ctrl-q"; //!< Override the key sequence for detaching a container. Format is a single character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _.
+        bool tty = false; //!< Allocate a pseudo-TTY
+        std::vector<std::string> env; //!< A list of environment variables in the form ["VAR=value", ...].
+        std::vector<std::string> cmd; //!< Command to run, as array of strings.
+        bool privileged = false; //!< Runs the exec process with extended privileges.
+        std::string user; //!< The user, and optionally, group to run the exec process inside the container. Format is one of: user, user:group, uid, or uid:gid.
+        std::string workingDirectory; //!< The working directory for the exec process inside the container.
+    };
+
     
 } // namespace docker_cpp
 

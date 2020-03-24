@@ -119,10 +119,11 @@ namespace docker_cpp
 		/**
 		 * Block until a container stops, then returns the exit code.
 		 * @param [in] id ID or name of the container
+		 * @param [in,out] result Result with the exit code of the container
 		 * @param [in] condition Wait until a container state reaches the given condition, either 'not-running' (default), 'next-exit', or 'removed'.
 		 * @returns DockerError
 		 */
-		DockerError waitContainer(const std::string &id, const std::string &condition = "not-running");
+		DockerError waitContainer(const std::string &id, WaitInfo &result, const std::string &condition = "not-running");
 		
 		/**
 		 * Remove a container.
@@ -136,10 +137,43 @@ namespace docker_cpp
 
 		////////// Exec
 
-		//Run a command inside a running container.
-		//DockerError createExecInstance(const std::string &id);
-		//DockerError startExecInstance(const std::string &id, bool detach = true, bool tty = false);
-		//DockerError inspectInstance(const std::string &id);
+		/**
+		 * Run a command inside a running container.
+		 * @param [in] id ID name of the container
+		 * @param [in] config Configuration parameters to execute a command
+		 * @param [in,out] execId The id of the newly created instance
+		 * @returns DockerError
+		 */
+		DockerError createExecInstance(const std::string &id, ExecConfig &config, std::string &execId);
+
+		/**
+		 * Starts a previously set up exec instance.
+		 * If detach is true, this endpoint returns immediately after starting the command.
+		 * Otherwise, it sets up an interactive session with the command.
+		 * @param [in] id Exec instance ID
+		 * @param [in] detach Detach from the command
+		 * @param [in] tty Allocate a pseudo-TTY
+		 * @returns DockerError
+		 */
+		DockerError startExecInstance(const std::string &id, bool detach = true, bool tty = false);
+
+		/**
+		 * Resize the TTY session used by an exec instance.
+		 * This endpoint only works if tty was specified as part of creating and starting the exec instance
+		 * @param [in] id Exec instance ID
+		 * @param [in] h Height of the TTY session in characters
+		 * @param [in] w Width of the TTY session in characters
+		 * @returns DockerError
+		 */
+		DockerError resizeExecInstance(const std::string &id, int h, int w);
+
+		/**
+		 * Return low-level information about an exec instance.
+		 * @param [in] id Exec instance ID
+		 * @param [in,out] result Information about the exec instance
+		 * @returns DockerError
+		 */
+		DockerError inspectInstance(const std::string &id, ExecInfo &result);
 
 		////////// Helper functions
 
