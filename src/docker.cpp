@@ -2,6 +2,7 @@
 #include "docker_cpp/docker_parse.h"
 
 #include <iostream>
+#include <sstream>
 
 #include <asl/String.h>
 #include <asl/Http.h>
@@ -46,7 +47,8 @@ DockerError Docker::ping()
 
 DockerError Docker::images(imageList &result, bool all, bool digests)
 {
-	const std::string url = _endpoint + "/images/json?all=" + BoolToText(all) + "?digests=" + BoolToText(digests);
+	std::string url = _endpoint + "/images/json";
+	url += concat_query_args(q_arg("all", all), q_arg("digests", digests));
 	auto res = asl::Http::get(asl::String(url.c_str()));
 	DockerError err = _checkError(&res);
 	if (!err.isOk()) return err;
@@ -76,7 +78,7 @@ DockerError Docker::removeImage(const std::string &name, bool force, bool noprun
 DockerError Docker::containers(containerList &result, bool all, int limit, bool size)
 {
 	std::string url = _endpoint + "/containers/json?all=" + BoolToText(all) + "?size=" + BoolToText(size);
-	if (limit > 0) url += url + "?limit=" + std::to_string(limit);
+	if (limit > 0) url += "?limit=" + std::to_string(limit);
 	auto res = asl::Http::get(asl::String(url.c_str()));
 	DockerError err = _checkError(&res);
 	if (!err.isOk()) return err;
@@ -157,8 +159,10 @@ DockerError Docker::createExecInstance(const std::string &id, ExecConfig &config
 DockerError Docker::startExecInstance(const std::string &id, bool detach, bool tty)
 {
 	const std::string url = _endpoint + "/exec/" + id + "/start";
-	// TODO: create body
-	auto res = asl::Http::post(asl::String(url.c_str()), "body");
+	std::stringstream ss;
+	ss << "{\"detach\":\"" << BoolToText(detach) << "\",\"tty\":" << BoolToText(tty) << "\"}";
+	std::string body = ss.str();
+	auto res = asl::Http::post(asl::String(url.c_str()), body.c_str());
 	return _checkError(&res);
 }
 

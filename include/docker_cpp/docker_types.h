@@ -4,6 +4,7 @@
 #include "export.h"
 
 #include <string>
+#include <sstream>
 #include <vector>
 #include <memory>
 
@@ -153,6 +154,32 @@ namespace docker_cpp
         bool privileged = false; //!< Runs the exec process with extended privileges.
         std::string user; //!< The user, and optionally, group to run the exec process inside the container. Format is one of: user, user:group, uid, or uid:gid.
         std::string workingDirectory; //!< The working directory for the exec process inside the container.
+
+        std::string str() {
+            std::stringstream ss;
+            ss << std::boolalpha;
+            ss << "{\"AttachStdin\":" << attachStdin << ",";
+            ss << "\"AttachStdout\":" << attachStdout << ",";
+            ss << "\"AttachStderr\":" << attachStderr << ",";
+            ss << "\"DetachKeys\":" << detachKeys << ",";
+            ss << "\"Tty\":" << tty << ",";
+            ss << "\"Env\": [";
+            for (auto &envVar : env) {
+                ss << "\"" << envVar << "\"";
+                if (&envVar != &env.back()) ss << ",";
+            }
+            ss << "],";
+            ss << "\"Cmd\": [";
+            for (auto &c : cmd) {
+                ss << "\"" << c << "\"";
+                if (&c != &cmd.back()) ss << ",";
+            }
+            ss << "],";
+            ss << "\"Privileged\":" << privileged << ",";
+            ss << "\"User\":" << user << ",";
+            ss << "\"WorkingDir\":" << workingDirectory << "}";
+            return ss.str();
+        };
     };
 
     

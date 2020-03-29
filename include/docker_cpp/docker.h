@@ -12,6 +12,26 @@ namespace asl {
 
 namespace docker_cpp
 {
+	template<typename T>
+	std::string concat_query_args(const std::pair<std::string, T>& value)
+	{
+		std::ostringstream oss;
+		oss << std::boolalpha << "?" << value.first << "=" << value.second;
+		return oss.str();
+	}
+
+	template<typename T, typename ...Args>
+	std::string concat_query_args(const std::pair<std::string, T>& value, const Args& ...args)
+	{
+		return concat_query_args(value) + concat_query_args(args...);
+	}
+
+	template<typename T>
+	std::pair<std::string, T> q_arg(const std::string &fst, const T scd) 
+	{ 
+		return std::make_pair(std::move(fst), std::move(scd));
+	}
+
 	class DOCKER_CPP_API Docker
 	{
 	public:
