@@ -1,6 +1,8 @@
 docker_cpp
 ===========
 
+*WIP*: WARN: Do not expect a full API support.
+
 A simple client to connect to a Docker daemon remotely.
 
 Dependencies

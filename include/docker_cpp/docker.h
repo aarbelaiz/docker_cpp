@@ -37,7 +37,7 @@ namespace docker_cpp
 	public:
 		Docker(const std::string &uri);
 		Docker(const std::string &ip, const unsigned int port);
-		~Docker(){};
+		~Docker() = default;
 
 		//////////// System
 
@@ -62,7 +62,7 @@ namespace docker_cpp
 		 * @param [in] digests Show digest information as a RepoDigests field on each image (default: false)
 		 * @returns DockerError
 		 */
-		DockerError images(imageList &result, bool all = false, bool digests=false);
+		DockerError images(ImageList &result, bool all = false, bool digests = false);
 		//DockerError buildImage(const std::string &id);
 		
 		/**
@@ -93,7 +93,7 @@ namespace docker_cpp
 		 * @param [in] size Return the size of container as fields SizeRw and SizeRootFs. (default: false)
 		 * @returns DockerError
 		 */
-		DockerError containers(containerList &result, bool all = false, int limit = -1, bool size = false);
+		DockerError containers(ContainerList &result, bool all = false, int limit = -1, bool size = false);
 		//DockerError createContainer(const std::string &name);
 
 		/**
@@ -202,7 +202,7 @@ namespace docker_cpp
 	private:
 		std::string _endpoint;
 
-		DockerError _checkError(asl::HttpResponse *res);
+		DockerError _checkError(const asl::HttpResponse& res);
 	};
 }
 

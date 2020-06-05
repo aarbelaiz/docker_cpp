@@ -12,21 +12,23 @@ int main()
 	bool connected = docker.checkConnection();
 	if (!connected) {
 		std::cout << "Could not connect to docker engine!" << std::endl;
-		return -1;
+		return EXIT_FAILURE;
 	}
 
-	imageList res;
+	// List images
+	ImageList res;
 	DockerError err = docker.images(res);
 	if (err.isOk()) {
 		std::cout << res[0].id << std::endl;
 		std::cout << res[0].sharedSize << std::endl;
 	}
 
-	containerList containers;
+	// List containers
+	ContainerList containers;
 	err = docker.containers(containers, true);
 	if (err.isError()) {
-		std::cout << err;
-		return -1;
+		std::cout << err << std::endl;
+		return EXIT_FAILURE;
 	}
 	for(auto &c : containers) {
 		std::cout << c.id << std::endl;

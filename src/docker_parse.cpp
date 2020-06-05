@@ -5,9 +5,9 @@
 
 namespace docker_cpp {
 
-void parseImages(asl::Var *in, imageList &out)
+void parseImages(const asl::Var &in, ImageList &out)
 {
-	foreach(asl::Var& image, *in)
+	foreach(asl::Var& image, in)
 	{
 		ImageInfo info;
 		info.id = *image["Id"].toString();
@@ -27,7 +27,7 @@ void parseImages(asl::Var *in, imageList &out)
 		if (image.has("Labels")) {
 			for(auto& l : image["Labels"].object())
 			{
-				auto entry = std::make_pair<std::string, std::string>(*l.key, *l.value.toString());
+				auto entry = std::make_pair(*l.key, *l.value.toString());
 				info.labels.push_back(entry);
 			}
 		}
@@ -36,7 +36,7 @@ void parseImages(asl::Var *in, imageList &out)
 	}
 }
 
-void parseContainers(asl::Var *in, containerList &out)
+void parseContainers(asl::Var *in, ContainerList &out)
 {
 	foreach(asl::Var &container, *in) {
 		ContainerInfo info;
@@ -104,7 +104,7 @@ void parseNetwork(asl::Var *in, NetworkSettings &out)
 			endpoint.gateway = *network["Gateway"];
 			endpoint.ipAddress = *network["IpAddress"].toString();
 			endpoint.ipPrefixLen = network["IpPrefixLen"];
-			out.networks.push_back(std::make_pair(*network.toString(), endpoint));
+			out.networks.push_back(std::make_pair(*network.toString(), std::ref(endpoint)));
 		}
 	}
 }

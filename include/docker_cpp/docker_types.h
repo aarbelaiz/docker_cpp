@@ -16,6 +16,8 @@ namespace docker_cpp
         DOCKER_ERROR = -2, //500, 404, 200 
     };
 
+    //////// IMAGE
+
     struct DOCKER_CPP_API ImageInfo {
         std::string id;
         std::string parentId;
@@ -29,7 +31,9 @@ namespace docker_cpp
         int containers;
     };
 
-    using imageList = std::vector<ImageInfo>;
+    using ImageList = std::vector<ImageInfo>;
+
+    /////////// CONTAINER
 
     struct DOCKER_CPP_API Port {
         std::string ip; //!< Host IP address that the container's port is mapped to
@@ -46,7 +50,7 @@ namespace docker_cpp
     };
 
     struct DOCKER_CPP_API EndpointSettings {
-        std::unique_ptr<IPAMConfig> *ipamConfig;
+        std::unique_ptr<IPAMConfig> ipamConfig;
         std::vector<std::string> links;
         std::vector<std::string> aliases;
         std::string networkID; //!< Unique ID of the network.
@@ -58,12 +62,12 @@ namespace docker_cpp
         std::string globalIpV6Address; //!< Global IPv6 address.
         std::int64_t globalIpV6PrefixLen; //!< Mask length of the global IPv6 address.
         std::string macAddress; //!< MAC address for the endpoint on this network.
-        std::unique_ptr<std::vector<std::pair<std::string, std::string> > > *driverOpts; // DriverOpts is a mapping of driver options and values. These options are passed directly to the driver and are driver specific.
+        std::vector<std::pair<std::string, std::string> > driverOpts; // DriverOpts is a mapping of driver options and values. These options are passed directly to the driver and are driver specific.
     };
 
     //Configuration for a network endpoint.
     struct DOCKER_CPP_API NetworkSettings {
-        std::vector<std::pair<std::string, EndpointSettings> >networks;
+        std::vector<std::pair<std::string, std::reference_wrapper<EndpointSettings> >> networks;
     };
 
     struct DOCKER_CPP_API Mount
@@ -75,7 +79,6 @@ namespace docker_cpp
         std::string consistency; //!< The consistency requirement for the mount: default, consistent, cached, or delegated. 
     };
     
-
     struct DOCKER_CPP_API ContainerInfo
     {
         std::string id; //!< The ID of this container
@@ -94,7 +97,75 @@ namespace docker_cpp
         NetworkSettings networkSettings; //!< A summary of the container's network settings
     };
 
-    using containerList = std::vector<ContainerInfo>;
+    using ContainerList = std::vector<ContainerInfo>;
+
+    struct DOCKER_CPP_API ContainerConfig
+    {
+        std::string hostname = ""; //!< The hostname to use for the container, as a valid RFC 1123 hostname.
+        std::string domainName = ""; //!< The domain name to use for the container.
+        std::string user = ""; //!< The user that commands are run as inside the container.
+        bool attachStdin = false; //!< Whether to attach to stdin.
+        bool attachStdout = true; //!< Whether to attach to stdout.
+        bool attachStdErr = true; //!< Whether to attach to stderr.
+        std::vector<std::string> exposedPorts; //!< An array of ports in the form "<port>/<tcp|udp|sctp>"
+        bool tty = false; //!< Attach standard streams to a TTY, including stdin if it is not closed.
+        bool openStdin = false; //!< Open stdin
+        bool stdinOnce = false; //!< Close stdin after one attached client disconnects
+        std::vector<std::string> env; //!< A list of environment variables to set inside the container in the form ["VAR=value", ...]. A variable without = is removed from the environment, rather than to have an empty value.
+        std::vector<std::string> cmd; //!< Command to run specified as an array of strings.
+        //TODO: HealthCheck
+        bool argsEscaped = true; //!< Command is already escaped (Windows only)
+        std::string image = ""; //!< The name of the image to use when creating the container
+        std::string workingDir = ""; //!< The working directory for commands to run in.
+        std::vector<std::string> entrypoint; //!< The entry point for the container as a string or an array of strings. If the array consists of exactly one empty string ([""]) then the entry point is reset to system default (i.e., the entry point used by docker when there is no ENTRYPOINT instruction in the Dockerfile).
+        bool networkDisabled = false; //!< Disable networking for the container.
+        std::string macAddress; //!< MAC address of the container.
+        std::vector<std::string> onBuild; //!< ONBUILD metadata that were defined in the image's Dockerfile.
+        std::vector<std::pair<std::string, std::string> > labels; //!< User-defined key/value metadata.
+        std::string stopSignal = "SIGTERM"; //!< Signal to stop a container as a string or unsigned integer.
+        int stopTimeout = 10; //!< Timeout to stop a container in seconds.
+        std::vector<std::string> shell; //!< Shell for when RUN, CMD, and ENTRYPOINT uses a shell.
+        //TODO: HostConfig
+        std::vector<std::pair<std::string, EndpointSettings> > endpointConfig; //!< A mapping of network name to endpoint configuration for that network.
+
+        std::string str() {
+            std::stringstream ss;
+            ss << std::boolalpha << "{";
+            ss << "\"Hostname\":" << hostname << ",";
+            ss << "\"DomainName\":" << domainName << ",";
+            ss << "\"User\":" << user << ",";
+            ss << "\"AttachStdin\":" << attachStdin << ",";
+            ss << "\"AttachStdout\":" << attachStdout << ",";
+            ss << "\"AttachStdErr\":" << attachStdErr << ",";
+            ss << "\"ExposedPorts\":{";
+            for(auto &p: exposedPorts){
+                ss << "\"" << p << "\": {}";
+                if (&p != &exposedPorts.back()) ss << ",";
+            }
+            ss << "},";
+            ss << "\"Tty\":" << tty << ",";
+            ss << "\"OpenStdin\":" << openStdin << ",";
+            ss << "\"StdinOnce\":" << stdinOnce << ",";
+            ss << "\"Env\":[";
+            for(auto &e: env){
+                ss << "\"" << e << "\"";
+                if (&e != &env.back()) ss << ",";
+            }
+            ss << "],";
+            ss << "\"Cmd\":[";
+            for(auto &c: cmd){
+                ss << "\"" << c << "\"";
+                if (&c != &cmd.back()) ss << ",";
+            }
+            ss << "],";
+            ss << "\"ArgsEscaped\":" << argsEscaped << ",";
+            ss << "\"Image\":" << image << ",";
+            ss << "\"WorkingDir\":" << workingDir << ",";
+            ss << "\"Image\":" << image << ",";
+            ss << "}";
+            return ss.str();
+        }
+    };
 
     struct DOCKER_CPP_API Component {
         std::string name;
