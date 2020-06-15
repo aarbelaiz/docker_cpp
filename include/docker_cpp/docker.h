@@ -3,40 +3,41 @@
 
 #include "docker_types.h"
 #include "docker_error.h"
+#include "docker_http.h"
+#include "docker_parse.h"
 
 #include <string>
 
-namespace asl {
+#include <asl/JSON.h>
+
+#include <type_traits>
+
+namespace asl
+{
 	class HttpResponse;
 }
 
 namespace docker_cpp
 {
-	template<typename T>
-	std::string concat_query_args(const std::pair<std::string, T>& value)
-	{
-		std::ostringstream oss;
-		oss << std::boolalpha << "?" << value.first << "=" << value.second;
-		return oss.str();
-	}
+	inline const char *const BoolToText(bool b) { return b ? "true" : "false"; }
 
-	template<typename T, typename ...Args>
-	std::string concat_query_args(const std::pair<std::string, T>& value, const Args& ...args)
-	{
-		return concat_query_args(value) + concat_query_args(args...);
-	}
-
-	template<typename T>
-	std::pair<std::string, T> q_arg(const std::string &fst, const T scd) 
-	{ 
-		return std::make_pair(std::move(fst), std::move(scd));
-	}
-
+	template <typename T>
 	class DOCKER_CPP_API Docker
 	{
+		static_assert(std::is_base_of<DockerHttpInterface<T>, T>::value, "T must derive from DockerHttpInterface");
+
 	public:
-		Docker(const std::string &uri);
-		Docker(const std::string &ip, const unsigned int port);
+		Docker(const std::string &uri)
+		{
+			std::cout << uri << std::endl;
+			_endpoint = uri + "/v1.40";
+		}
+
+		Docker(const std::string &ip, const unsigned int port)
+		{
+			Docker("http://" + ip + std::to_string(port), _server);
+		}
+
 		~Docker() = default;
 
 		//////////// System
@@ -46,12 +47,27 @@ namespace docker_cpp
 		 * @param [in,out] result Information (VersioInfo) about docker and the system.
 		 * @returns DockerError
 		 */
-		DockerError version(VersionInfo &result);
+		DockerError version(VersionInfo &result)
+		{
+			const std::string url = _endpoint + "/version/json";
+			auto res = _server.get(url);
+			DockerError err = _checkError(res);
+			if (!err.isOk())
+				return err;
+			auto data = res.json();
+			parseVersionInfo(&data, result);
+			return err;
+		}
 
 		/**
 		 * Dummy endpoint to check connection with API Engine
 		 */
-		DockerError ping();
+		DockerError ping()
+		{
+			const std::string url = _endpoint + "/_ping";
+			auto res = _server.get(url);
+			return _checkError(res);
+		}
 
 		//////////// Images
 
@@ -62,9 +78,37 @@ namespace docker_cpp
 		 * @param [in] digests Show digest information as a RepoDigests field on each image (default: false)
 		 * @returns DockerError
 		 */
-		DockerError images(ImageList &result, bool all = false, bool digests = false);
+		DockerError images(ImageList &result, bool all = false, bool digests = false)
+		{
+			std::string url = _endpoint + "/images/json";
+			url += query_params(q_arg("all", all), q_arg("digests", digests));
+			auto res = _server.get(url);
+			DockerError err = _checkError(res);
+			if (!err.isOk())
+				return err;
+			parseImages(res.json(), result);
+			return err;
+		}
 		//DockerError buildImage(const std::string &id);
-		
+
+		/**
+		 * Create an image by either pulling it from a registry or importing it.
+		 * @param [in] fromImage Name of the image to pull. The name may include a tag or digest. This parameter may only be used when pulling an image. The pull is cancelled if the HTTP connection is closed.
+		 * @param [in] fromSrc Source to import. The value may be a URL from which the image can be retrieved or `-` to read the image from the request body. This parameter may only be used when importing an image.
+		 * @param [in] repo Repository name given to an image when it is imported. The repo may include a tag. This parameter may only be used when importing an image.
+		 * @param [in] tag Set commit message for imported image.
+		 * @param [in] message Set commit message for imported image.
+		 * @param [in] platform Platform in the format os[/arch[/variant]] (default: "").
+		 * @returns DockerError
+		 */
+		DockerError createImage(const std::string &fromImage, const std::string &fromSrc, const std::string &repo, const std::string &tag, const std::string &message, const std::string &platform = "")
+		{
+			std::string url = _endpoint + "/images/create/json";
+			url += query_params(q_arg("fromImage", fromImage));
+			auto res = _server.get(url);
+			return _checkError(res);
+		}
+
 		/**
 		 * Tag an image so that it becomes part of a repository.
 		 * @param [in] name Image name or ID to tag
@@ -72,7 +116,16 @@ namespace docker_cpp
 		 * @param [in] tag The name of the new tag
 		 * @returns DockerError
 		 */
-		DockerError tagImage(const std::string &name, const std::string &repo, const std::string &tag);
+		DockerError tagImage(const std::string &name, const std::string &repo, const std::string &tag)
+		{
+			std::string url = _endpoint + "/images/" + name + "/tag/json";
+			if (!repo.empty())
+				url += "?repo=" + repo;
+			if (!tag.empty())
+				url += "?tag=" + tag;
+			auto res = _server.post(url, "");
+			return _checkError(res);
+		}
 
 		/**
 		 * Remove an image, along with any untagged parent images that were referenced by that image.
@@ -81,10 +134,16 @@ namespace docker_cpp
 		 * @param [in] force Remove the image even if it is being used by stopped containers or has other tags (default: false)
 		 * @param [in] noprune Do not delete untagged parent images (default: false)
 		 */
-		DockerError removeImage(const std::string &name, bool force = false, bool noprune = false);
+		DockerError removeImage(const std::string &name, bool force = false, bool noprune = false)
+		{
+			std::string url = _endpoint + "/images/" + name + "/json";
+			url += query_params(q_arg("force", force), q_arg("noprune", noprune));
+			auto res = _server.delet(url);
+			return _checkError(res);
+		}
 
 		//////////// Containers
-		
+
 		/**
 		 * Returns a list of containers.
 		 * @param [in,out] result A list of information (containerInfo) of each container in the server
@@ -93,7 +152,20 @@ namespace docker_cpp
 		 * @param [in] size Return the size of container as fields SizeRw and SizeRootFs. (default: false)
 		 * @returns DockerError
 		 */
-		DockerError containers(ContainerList &result, bool all = false, int limit = -1, bool size = false);
+		DockerError containers(ContainerList &result, bool all = false, int limit = -1, bool size = false)
+		{
+			std::string url = _endpoint + "/containers/json?all=" + BoolToText(all) + "?size=" + BoolToText(size);
+			if (limit > 0)
+				url += "?limit=" + std::to_string(limit);
+			auto res = _server.get(url);
+			DockerError err = _checkError(res);
+			if (!err.isOk())
+				return err;
+			asl::String filteredResponse = res.text().replace("\\\"", ""); // AAA: scaping is necessary for commands
+			asl::Var data = asl::Json::decode(filteredResponse);
+			parseContainers(&data, result);
+			return err;
+		}
 		//DockerError createContainer(const std::string &name);
 
 		/**
@@ -102,31 +174,55 @@ namespace docker_cpp
 		 * @param [in] detachKeys Override the key sequence for detaching a container. Format is a single character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _.
 		 * @returns DockerError
 		 */
-		DockerError startContainer(const std::string &id, const std::string &detachKeys = "ctrl-c");
-		
+		DockerError startContainer(const std::string &id, const std::string &detachKeys = "ctrl-c")
+		{
+			const std::string url = _endpoint + "/containers/" + id + "/start/json?detachKeys=" + detachKeys;
+			auto res = _server.post(url, "");
+			return _checkError(res);
+		}
+
 		/**
 		 * Stop a container.
 		 * @param [in] id ID or name of the container
 		 * @param [in] t Number of seconds to wait before killing the container
 		 * @returns DockerError
 		 */
-		DockerError stopContainer(const std::string &id, int t = -1);
-		
+		DockerError stopContainer(const std::string &id, int t = -1)
+		{
+			std::string url = _endpoint + "/containers/" + id + "/stop/json";
+			if (t > 0)
+				url += "?t=" + std::to_string(t);
+			auto res = _server.post(url, "");
+			return _checkError(res);
+		}
+
 		/**
 		 * Restart a container.
 		 * @param [in] id ID or name of the container
 		 * @param [in] t Number of seconds to wait before killing the container
 		 * @returns DockerError
 		 */
-		DockerError restartContainer(const std::string &id, int t = -1);
-		
+		DockerError restartContainer(const std::string &id, int t = -1)
+		{
+			std::string url = _endpoint + "/containers/" + id + "/restart/json";
+			if (t > 0)
+				url += "?t=" + std::to_string(t);
+			auto res = _server.post(url, "");
+			return _checkError(res);
+		}
+
 		/**
 		 * Kill a container.
 		 * @param [in] id ID or name of the container
 		 * @param [in] signal Signal to send to the container as an integer or string e.g. SIGINT (defauult: SIGKILL)
 		 * @returns DockerError
 		 */
-		DockerError killContainer(const std::string &id, const std::string &signal = "SIGKILL");
+		DockerError killContainer(const std::string &id, const std::string &signal = "SIGKILL")
+		{
+			const std::string url = _endpoint + "/containers/" + id + "/kill/json?signal=" + signal;
+			auto res = _server.post(url, "");
+			return _checkError(res);
+		}
 
 		/**
 		 * Rename a container.
@@ -134,8 +230,13 @@ namespace docker_cpp
 		 * @param [in] name New name for the container
 		 * @returns DockerError
 		 */
-		DockerError renameContainer(const std::string &id, const std::string &name);
-		
+		DockerError renameContainer(const std::string &id, const std::string &name)
+		{
+			const std::string url = _endpoint + "/containers/" + id + "/rename/json?name=" + name;
+			auto res = _server.post(url, "");
+			return _checkError(res);
+		}
+
 		/**
 		 * Block until a container stops, then returns the exit code.
 		 * @param [in] id ID or name of the container
@@ -143,8 +244,18 @@ namespace docker_cpp
 		 * @param [in] condition Wait until a container state reaches the given condition, either 'not-running' (default), 'next-exit', or 'removed'.
 		 * @returns DockerError
 		 */
-		DockerError waitContainer(const std::string &id, WaitInfo &result, const std::string &condition = "not-running");
-		
+		DockerError waitContainer(const std::string &id, WaitInfo &result, const std::string &condition = "not-running")
+		{
+			const std::string url = _endpoint + "/containers/" + id + "/wait/json?condition=" + condition;
+			auto res = _server.post(url, "");
+			DockerError err = _checkError(res);
+			if (err.isError())
+				return err;
+			auto data = res.json();
+			parseWaitInfo(&data, result);
+			return err;
+		}
+
 		/**
 		 * Remove a container.
 		 * @param [in] id ID or name of the container
@@ -153,7 +264,12 @@ namespace docker_cpp
 		 * @param [in] link If the container is running, kill it before removing it (default: false)
 		 * @returns DockerError
 		 */
-		DockerError removeContainer(const std::string &id, bool v = false, bool force = false, bool link = false);
+		DockerError removeContainer(const std::string &id, bool v = false, bool force = false, bool link = false)
+		{
+			const std::string url = _endpoint + "/containers/" + id + "/json?v=" + BoolToText(v) + "?force=" + BoolToText(force) + "?link=" + BoolToText(link);
+			auto res = _server->delet(url);
+			return _checkError(res);
+		}
 
 		////////// Exec
 
@@ -164,7 +280,18 @@ namespace docker_cpp
 		 * @param [in,out] execId The id of the newly created instance
 		 * @returns DockerError
 		 */
-		DockerError createExecInstance(const std::string &id, ExecConfig &config, std::string &execId);
+		DockerError createExecInstance(const std::string &id, ExecConfig &config, std::string &execId)
+		{
+			const std::string url = _endpoint + "/containers/" + id + "/exec";
+			// TODO: create body
+			auto res = _server->post(url, "body");
+			DockerError err = _checkError(res);
+			if (err.isError())
+				return err;
+			auto data = res.json();
+			execId = *data["Id"].toString();
+			return err;
+		}
 
 		/**
 		 * Starts a previously set up exec instance.
@@ -175,7 +302,15 @@ namespace docker_cpp
 		 * @param [in] tty Allocate a pseudo-TTY
 		 * @returns DockerError
 		 */
-		DockerError startExecInstance(const std::string &id, bool detach = true, bool tty = false);
+		DockerError startExecInstance(const std::string &id, bool detach = true, bool tty = false)
+		{
+			const std::string url = _endpoint + "/exec/" + id + "/start";
+			std::stringstream ss;
+			ss << "{\"detach\":\"" << BoolToText(detach) << "\",\"tty\":" << BoolToText(tty) << "\"}";
+			std::string body = ss.str();
+			auto res = _server->post(url, body.c_str());
+			return _checkError(res);
+		}
 
 		/**
 		 * Resize the TTY session used by an exec instance.
@@ -185,7 +320,12 @@ namespace docker_cpp
 		 * @param [in] w Width of the TTY session in characters
 		 * @returns DockerError
 		 */
-		DockerError resizeExecInstance(const std::string &id, int h, int w);
+		DockerError resizeExecInstance(const std::string &id, int h, int w)
+		{
+			const std::string url = _endpoint + "/exec/" + id + "/resize?h=" + std::to_string(h) + "?w=" + std::to_string(w);
+			auto res = _server->post(url, "");
+			return _checkError(res);
+		}
 
 		/**
 		 * Return low-level information about an exec instance.
@@ -193,17 +333,45 @@ namespace docker_cpp
 		 * @param [in,out] result Information about the exec instance
 		 * @returns DockerError
 		 */
-		DockerError inspectInstance(const std::string &id, ExecInfo &result);
+		DockerError inspectInstance(const std::string &id, ExecInfo &result)
+		{
+			const std::string url = _endpoint + "/exec/" + id + "/json";
+			auto res = _server->get(url);
+			DockerError err = _checkError(res);
+			if (err.isError())
+				return err;
+			asl::Var data = asl::Json::decode(res.text().replace("\\\"", "")); // AAA: scaping is necessary for commands
+			parseExec(&data, result);
+			return err;
+		}
 
 		////////// Helper functions
 
-		bool checkConnection();
+		bool checkConnection() { return this->ping().isOk(); }
 
 	private:
 		std::string _endpoint;
+		T _server;
 
-		DockerError _checkError(const asl::HttpResponse& res);
+		DockerError _checkError(const asl::HttpResponse &res)
+		{
+			int code = res.code();
+			if (code == 200 || code == 204)
+			{
+				return DockerError::OK();
+			}
+			else if (code < 400)
+			{
+				std::string msg = *(res.json()["message"].toString());
+				return DockerError::INFO(msg, code);
+			}
+			else
+			{
+				std::string msg = *(res.json()["message"].toString());
+				return DockerError::ERROR(msg, code);
+			}
+		}
 	};
-}
+} // namespace docker_cpp
 
 #endif

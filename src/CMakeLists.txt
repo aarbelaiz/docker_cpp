@@ -25,9 +25,9 @@ add_library(${TARGET} SHARED ${SRC} ${HEADERS})
 
 set_target_properties(${TARGET} PROPERTIES PUBLIC_HEADER "${HEADERS}")
 target_include_directories(${TARGET} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
-							$<INSTALL_INTERFACE:$<TARGET_FILE_DIR:${TARGET}>/../include>)
+											$<INSTALL_INTERFACE:$<TARGET_FILE_DIR:${TARGET}>/../include>)
 
-target_link_libraries(${TARGET} PRIVATE asls)
+target_link_libraries(${TARGET} asls)
 
 #export(TARGETS ${TARGET} FILE ${CMAKE_BINARY_DIR}/${TARGET}Config.cmake )
 

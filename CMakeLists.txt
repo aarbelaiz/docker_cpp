@@ -14,7 +14,7 @@ set(CMAKE_DEBUG_POSTFIX "d")
 
 add_subdirectory(src)
 
-option(DOCKERCPP_BUILD_SAMPLES "Build samples")
+option(DOCKERCPP_BUILD_SAMPLES "Build samples" ON)
 
 if(DOCKERCPP_BUILD_SAMPLES)
 	add_subdirectory(samples)

@@ -167,6 +167,8 @@ namespace docker_cpp
         }
     };
 
+    //////////// SYSTEM
+
     struct DOCKER_CPP_API Component {
         std::string name;
         std::string version;
@@ -190,7 +192,7 @@ namespace docker_cpp
         std::string errorMsg; //!< Details of an error
     };
 
-    //////////// Exec
+    //////////// EXEC
 
     struct DOCKER_CPP_API ProcessConfig {
         bool privileged;
