@@ -19,8 +19,6 @@ namespace asl
 
 namespace docker_cpp
 {
-	inline const char *const BoolToText(bool b) { return b ? "true" : "false"; }
-
 	template <typename T>
 	class DOCKER_CPP_API Docker
 	{
@@ -119,10 +117,7 @@ namespace docker_cpp
 		DockerError tagImage(const std::string &name, const std::string &repo, const std::string &tag)
 		{
 			std::string url = _endpoint + "/images/" + name + "/tag/json";
-			if (!repo.empty())
-				url += "?repo=" + repo;
-			if (!tag.empty())
-				url += "?tag=" + tag;
+			url += query_params(q_arg("repo", repo), q_arg("tag", tag));
 			auto res = _server.post(url, "");
 			return _checkError(res);
 		}
@@ -154,9 +149,8 @@ namespace docker_cpp
 		 */
 		DockerError containers(ContainerList &result, bool all = false, int limit = -1, bool size = false)
 		{
-			std::string url = _endpoint + "/containers/json?all=" + BoolToText(all) + "?size=" + BoolToText(size);
-			if (limit > 0)
-				url += "?limit=" + std::to_string(limit);
+			std::string url = _endpoint + "/containers/json";
+			url += query_params(q_arg("all", all), q_arg("limit", limit), q_arg("size", size));
 			auto res = _server.get(url);
 			DockerError err = _checkError(res);
 			if (!err.isOk())
@@ -190,8 +184,7 @@ namespace docker_cpp
 		DockerError stopContainer(const std::string &id, int t = -1)
 		{
 			std::string url = _endpoint + "/containers/" + id + "/stop/json";
-			if (t > 0)
-				url += "?t=" + std::to_string(t);
+			url += query_params(q_arg("t", t));
 			auto res = _server.post(url, "");
 			return _checkError(res);
 		}
@@ -205,8 +198,7 @@ namespace docker_cpp
 		DockerError restartContainer(const std::string &id, int t = -1)
 		{
 			std::string url = _endpoint + "/containers/" + id + "/restart/json";
-			if (t > 0)
-				url += "?t=" + std::to_string(t);
+			url += query_params(q_arg("t", t));
 			auto res = _server.post(url, "");
 			return _checkError(res);
 		}
@@ -232,7 +224,8 @@ namespace docker_cpp
 		 */
 		DockerError renameContainer(const std::string &id, const std::string &name)
 		{
-			const std::string url = _endpoint + "/containers/" + id + "/rename/json?name=" + name;
+			std::string url = _endpoint + "/containers/" + id + "/rename/json";
+			url += query_params(q_arg("name", name));
 			auto res = _server.post(url, "");
 			return _checkError(res);
 		}
@@ -266,7 +259,8 @@ namespace docker_cpp
 		 */
 		DockerError removeContainer(const std::string &id, bool v = false, bool force = false, bool link = false)
 		{
-			const std::string url = _endpoint + "/containers/" + id + "/json?v=" + BoolToText(v) + "?force=" + BoolToText(force) + "?link=" + BoolToText(link);
+			std::string url = _endpoint + "/containers/" + id + "/json";
+			url += query_params(q_arg("v", v), q_arg("force", force), q_arg("link", link));
 			auto res = _server->delet(url);
 			return _checkError(res);
 		}
@@ -280,7 +274,7 @@ namespace docker_cpp
 		 * @param [in,out] execId The id of the newly created instance
 		 * @returns DockerError
 		 */
-		DockerError createExecInstance(const std::string &id, ExecConfig &config, std::string &execId)
+		DockerError createExecInstance(const std::string &id, const ExecConfig &config, std::string &execId)
 		{
 			const std::string url = _endpoint + "/containers/" + id + "/exec";
 			// TODO: create body
@@ -306,7 +300,7 @@ namespace docker_cpp
 		{
 			const std::string url = _endpoint + "/exec/" + id + "/start";
 			std::stringstream ss;
-			ss << "{\"detach\":\"" << BoolToText(detach) << "\",\"tty\":" << BoolToText(tty) << "\"}";
+			ss << std::boolalpha << "{\"detach\":\"" << detach << "\",\"tty\":" << tty << "\"}";
 			std::string body = ss.str();
 			auto res = _server->post(url, body.c_str());
 			return _checkError(res);
@@ -322,7 +316,8 @@ namespace docker_cpp
 		 */
 		DockerError resizeExecInstance(const std::string &id, int h, int w)
 		{
-			const std::string url = _endpoint + "/exec/" + id + "/resize?h=" + std::to_string(h) + "?w=" + std::to_string(w);
+			std::string url = _endpoint + "/exec/" + id + "/resize";
+			url += query_params(q_arg("h", h), q_arg("w", w));
 			auto res = _server->post(url, "");
 			return _checkError(res);
 		}
