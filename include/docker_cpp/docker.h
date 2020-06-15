@@ -27,13 +27,12 @@ namespace docker_cpp
 	public:
 		Docker(const std::string &uri)
 		{
-			std::cout << uri << std::endl;
 			_endpoint = uri + "/v1.40";
 		}
 
 		Docker(const std::string &ip, const unsigned int port)
 		{
-			Docker("http://" + ip + std::to_string(port), _server);
+			Docker("http://" + ip + ":" + std::to_string(port), _server);
 		}
 
 		~Docker() = default;
