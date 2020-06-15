@@ -2,6 +2,7 @@
 #define _DOCKER_ERROR_H
 
 #include "docker_types.h"
+
 #include <string>
 #include <iostream>
 

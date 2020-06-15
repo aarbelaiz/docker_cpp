@@ -17,6 +17,7 @@ set(HEADERS
 	${INC}/docker.h
 	${INC}/docker_types.h
 	${INC}/docker_parse.h
+	${INC}/docker_http.h
 	${INC}/docker_error.h
 	${INC}/export.h
 )

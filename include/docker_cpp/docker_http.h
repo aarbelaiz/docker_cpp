@@ -15,7 +15,7 @@ namespace docker_cpp
 	std::string query_params(const std::pair<std::string, T>& value)
 	{
 		std::ostringstream oss;
-		oss << std::boolalpha << "?" << value.first << "=" << value.second;
+		oss << std::boolalpha << value.first << "=" << value.second;
 		return oss.str();
 	}
 
@@ -23,7 +23,7 @@ namespace docker_cpp
 	{
 		if (value.second >= 0) {
 			std::ostringstream oss;
-			oss << "?" << value.first << "=" << value.second;
+			oss << value.first << "=" << value.second;
 			return oss.str();
 		}else{
 			return std::string();
@@ -34,7 +34,7 @@ namespace docker_cpp
 	{
 		if (value.second != '\0') {
 			std::ostringstream oss;
-			oss << "?" << value.first << "=" << value.second;
+			oss << value.first << "=" << value.second;
 			return oss.str();
 		}else{
 			return std::string();
@@ -45,7 +45,7 @@ namespace docker_cpp
 	{
 		if (!value.second.empty()) {
 			std::ostringstream oss;
-			oss << std::boolalpha << "?" << value.first << "=" << value.second;
+			oss << value.first << "=" << value.second;
 			return oss.str();
 		}else{
 			return std::string();
@@ -55,7 +55,7 @@ namespace docker_cpp
 	template<typename T, typename ...Args>
 	std::string query_params(const std::pair<std::string, T>& value, const Args& ...args)
 	{
-		return query_params(value) + query_params(args...);
+		return query_params(value) + "&" + query_params(args...);
 	}
 
 	template<typename T>

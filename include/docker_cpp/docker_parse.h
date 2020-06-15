@@ -9,13 +9,13 @@ namespace asl {
 
 namespace docker_cpp
 {
-    void parseImages(const asl::Var &in, ImageList &out);
-    void parseContainers(asl::Var *in, ContainerList &out);
-    void parsePort(asl::Var *in, Port &out);
-    void parseNetwork(asl::Var *in, NetworkSettings &out);
-    void parseVersionInfo(asl::Var *in, VersionInfo &out);
-    void parseWaitInfo(asl::Var *in, WaitInfo &out);
-    void parseExec(asl::Var *in, ExecInfo &out);
+    void parse(const asl::Var &in, ImageList &out);
+    void parse(asl::Var *in, ContainerList &out);
+    void parse(const asl::Var &in, Port &out);
+    void parse(asl::Var *in, NetworkSettings &out);
+    void parse(const asl::Var &in, VersionInfo &out);
+    void parse(const asl::Var &in, WaitInfo &out);
+    void parse(asl::Var *in, ExecInfo &out);
 } // namespace docker_cpp
 
 

@@ -5,7 +5,7 @@
 
 namespace docker_cpp {
 
-void parseImages(const asl::Var &in, ImageList &out)
+void parse(const asl::Var &in, ImageList &out)
 {
 	foreach(asl::Var& image, in)
 	{
@@ -36,7 +36,7 @@ void parseImages(const asl::Var &in, ImageList &out)
 	}
 }
 
-void parseContainers(asl::Var *in, ContainerList &out)
+void parse(asl::Var *in, ContainerList &out)
 {
 	foreach(asl::Var &container, *in) {
 		ContainerInfo info;
@@ -51,7 +51,7 @@ void parseContainers(asl::Var *in, ContainerList &out)
 		if (container.has("Ports")) {
 			foreach(auto portInfo, container["Ports"]) {
 				Port port;
-				parsePort(&portInfo, port);
+				parse(portInfo, port);
 				info.ports.push_back(port);	
 			}
 		}
@@ -73,22 +73,22 @@ void parseContainers(asl::Var *in, ContainerList &out)
 		}
 		if (container.has("NetworkSettings")) {
 			NetworkSettings networkSettings;
-			parseNetwork(&container["NetworkSettings"], networkSettings);
+			parse(&container["NetworkSettings"], networkSettings);
 			info.networkSettings = networkSettings;
 		}
 		out.push_back(info);
 	}
 }
 
-void parsePort(asl::Var *in, Port &out)
+void parse(const asl::Var &in, Port &out)
 {
-	out.ip = *((*in)["Ip"].toString());
-	out.privatePort = *((*in)["PrivatePort"].toString());
-	out.publicPort = *((*in)["PublicPort"].toString());
-	out.type = *((*in)["Type"].toString());
+	out.ip = *(in["Ip"].toString());
+	out.privatePort = *(in["PrivatePort"].toString());
+	out.publicPort = *(in["PublicPort"].toString());
+	out.type = *(in["Type"].toString());
 }
 
-void parseNetwork(asl::Var *in, NetworkSettings &out)
+void parse(asl::Var *in, NetworkSettings &out)
 {
 	if (in->has("Networks")) {
 		foreach(auto network, (*in)["Networks"]) {
@@ -109,36 +109,36 @@ void parseNetwork(asl::Var *in, NetworkSettings &out)
 	}
 }
 
-void parseVersionInfo(asl::Var *in, VersionInfo &out)
+void parse(const asl::Var &in, VersionInfo &out)
 {
-    if (in->has("Components")){
-        foreach(asl::Var& component, (*in)["Components"]) {
+    if (in.has("Components")){
+        foreach(asl::Var& component, in["Components"]) {
             Component comp;
             comp.name = *component["Name"].toString();
             comp.version = *component["Version"].toString();
             out.components.push_back(comp);
         }
     }
-    out.version = *((*in)["Version"].toString());
-    out.apiVersion = *((*in)["ApiVersion"].toString());
-    out.minApiVersion = *((*in)["MinApiVersion"].toString());
-    out.gitCommit = *((*in)["GitCommit"].toString());
-    out.os = *((*in)["Os"].toString());
-    out.arch = *((*in)["Arch"].toString());
-    out.kernelVersion = *((*in)["KernelVersion"].toString());
-    out.experimental = (*in)["Experimental"];
-    out.buildTime = *((*in)["BuildTime"].toString());
+    out.version = *(in["Version"].toString());
+    out.apiVersion = *(in["ApiVersion"].toString());
+    out.minApiVersion = *(in["MinApiVersion"].toString());
+    out.gitCommit = *(in["GitCommit"].toString());
+    out.os = *(in["Os"].toString());
+    out.arch = *(in["Arch"].toString());
+    out.kernelVersion = *(in["KernelVersion"].toString());
+    out.experimental = in["Experimental"];
+    out.buildTime = *(in["BuildTime"].toString());
 }
 
-void parseWaitInfo(asl::Var *in, WaitInfo &out)
+void parse(const asl::Var &in, WaitInfo &out)
 {
-	out.statusCode = (*in)["StatusCode"];
-	if (in->has("Error")){
-		out.errorMsg = *((*in)["Error"]["Message"].toString());
+	out.statusCode = in["StatusCode"];
+	if (in.has("Error")){
+		out.errorMsg = *(in["Error"]["Message"].toString());
 	}
 }
 
-void parseExec(asl::Var *in, ExecInfo &out)
+void parse(asl::Var *in, ExecInfo &out)
 {
 	out.canRemove = (*in)["CanRemove"];
 	out.detachKeys = *((*in)["DetachKeys"].toString());
