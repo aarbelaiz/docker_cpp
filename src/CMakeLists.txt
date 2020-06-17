@@ -6,7 +6,6 @@ project(${TARGET})
 find_package(ASL REQUIRED)
 
 set(SRC
-	docker.cpp
 	docker_error.cpp
 	docker_parse.cpp
 )
