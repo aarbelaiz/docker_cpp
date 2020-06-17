@@ -24,21 +24,22 @@ if (ok) {
 }
 ```
 
-For example, to get the collection of the docker images:
+For example, to get the collection of images in the docker server:
 
 ```c++
-
- // List images
- ImageList images;
+ ImageList images;  // Data structure for a list images : vector<ImageInfo>
  DockerError err = docker.images(images);
  if (err.isOk()) {
-     // images will contain an array of image data
+     // images is a vector populated with information about each docker image
+     for (auto &im : images) { // To print the id of each image
+         std::cout << "ID: " << im.id << '\n';
+     }
  }else{
-     std::cerr << "ERROR: List of image could not be retrieved!" << std::endl;
+     std::cerr << "ERROR: List of image could not be retrieved!" << '\n';
  }
 ```
 
-For more examples, see the `samples` directory.
+For more examples, see the `samples` directory an also check the API coverage.
 
 ## Dependencies
 
@@ -50,7 +51,7 @@ Developed with version [v1.40](https://docs.docker.com/engine/api/v1.40/) of the
 
 ### API coverage
 
-| API Feature                | Supported |
+| API Feature                  | Supported |
 | :--------------------------- | --------: |
 | __Authentication__           | :x: |
 | __System__                   |     |
@@ -76,7 +77,31 @@ Developed with version [v1.40](https://docs.docker.com/engine/api/v1.40/) of the
 | Export an image              | :x: |
 | Export several images        | :x: |
 | Import images                | :x: |
-| __Containers__     | :x:  |
+| __Containers__               | :x: |
+| List containers              | :clock9: |
+| Create a container           | :clock9: |
+| Inspect a container          | :x: |
+| List processes running inside a container | :x: |
+| Get container logs           | :x: |
+| Get changes on a container's filesystem | :x: |
+| Export a container           | :x: |
+| Get container stats          | :x: |
+| Resize a container TTY       | :x: |
+| Start a container            | :clock9: |
+| Restart a container          | :clock9: |
+| Kill a container             | :clock9: |
+| Update a container           | :x: |
+| Rename a container           | :clock9: |
+| Pause a container            | :clock9: |
+| Unpause a container          | :clock9: |
+| Attatch to a container       | :x: |
+| Attatch to a container webs. | :x: |
+| Wait for a container         | :x: |
+| Remove a container           | :clock9: |
+| Get information about files in container | :x: |
+| Get an archive of a filesystem resource in a container | :x: |
+| Extract an archive of files or folders to a directory in a container | :x: |
+| Delete stopped containers    | :clock9: |
 | __Networks__       | :x:  |
 | __Volumes__        | :x:  |
 | __Exec__           | :x:  |
