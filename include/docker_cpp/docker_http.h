@@ -19,7 +19,7 @@ namespace docker_cpp
 		return oss.str();
 	}
 
-	std::string query_params(const std::pair<std::string, int>& value)
+	inline std::string query_params(const std::pair<std::string, int>& value)
 	{
 		if (value.second >= 0) {
 			std::ostringstream oss;
@@ -30,7 +30,7 @@ namespace docker_cpp
 		}
 	}
 
-	std::string query_params(const std::pair<std::string, char>& value)
+	inline std::string query_params(const std::pair<std::string, char>& value)
 	{
 		if (value.second != '\0') {
 			std::ostringstream oss;
@@ -41,7 +41,7 @@ namespace docker_cpp
 		}
 	}
 
-	std::string query_params(const std::pair<std::string, std::string>& value)
+	inline std::string query_params(const std::pair<std::string, std::string>& value)
 	{
 		if (!value.second.empty()) {
 			std::ostringstream oss;

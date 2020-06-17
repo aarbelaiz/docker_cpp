@@ -1,8 +1,6 @@
 #include <doctest/doctest.h>
 #include "test_utils.h"
 
-#include <docker_cpp/docker.h>
-
 using namespace docker_cpp;
 
 TEST_SUITE("SYSTEM") {

@@ -113,4 +113,3 @@ Developed with version [v1.40](https://docs.docker.com/engine/api/v1.40/) of the
 | __Configs__        | :x:  |
 | __Plugins__        | :x:  |
 | __Distribution__   | :x:  |
-| __Distribution__   | :x:  |

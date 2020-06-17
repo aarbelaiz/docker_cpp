@@ -3,7 +3,11 @@
 
 #include "test_config.h"
 
-#include <docker_cpp/docker_http.h>
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest/doctest.h>
+
+#include <docker_cpp/docker.h>
+
 #include <asl/File.h>
 
 #include <iostream>
