@@ -121,13 +121,14 @@ void parse(const asl::Var &in, VersionInfo &out)
     }
     out.version = *(in["Version"].toString());
     out.apiVersion = *(in["ApiVersion"].toString());
-    out.minApiVersion = *(in["MinApiVersion"].toString());
+    out.minApiVersion = *(in["MinAPIVersion"].toString());
     out.gitCommit = *(in["GitCommit"].toString());
     out.os = *(in["Os"].toString());
     out.arch = *(in["Arch"].toString());
     out.kernelVersion = *(in["KernelVersion"].toString());
     out.experimental = in["Experimental"];
     out.buildTime = *(in["BuildTime"].toString());
+	out.goVersion = *(in["GoVersion"].toString());
 }
 
 void parse(const asl::Var &in, WaitInfo &out)
