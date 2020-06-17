@@ -12,11 +12,6 @@
 
 #include <type_traits>
 
-namespace asl
-{
-	class HttpResponse;
-}
-
 namespace docker_cpp
 {
 	template <typename T>
@@ -331,17 +326,17 @@ namespace docker_cpp
 			int code = res.code();
 			if (code == 200 || code == 204)
 			{
-				return DockerError::OK();
+				return DockerError::D_OK();
 			}
 			else if (code < 400)
 			{
 				std::string msg = *(res.json()["message"].toString());
-				return DockerError::INFO(msg, code);
+				return DockerError::D_INFO(msg, code);
 			}
 			else
 			{
 				std::string msg = *(res.json()["message"].toString());
-				return DockerError::ERROR(msg, code);
+				return DockerError::D_ERROR(msg, code);
 			}
 		}
 	};

@@ -19,17 +19,17 @@ namespace docker_cpp
         return errorCode == DOCKER_ERROR;
     }
 
-    DockerError DockerError::OK()
+    DockerError DockerError::D_OK()
     {
         return DockerError(DOCKER_OK, "", 200);
     }
 
-    DockerError DockerError::INFO(const std::string& msg, int codeAPI)
+    DockerError DockerError::D_INFO(const std::string& msg, int codeAPI)
     {
         return DockerError(DOCKER_INFO, msg, codeAPI);
     }
 
-    DockerError DockerError::ERROR(const std::string& msg, int codeAPI)
+    DockerError DockerError::D_ERROR(const std::string& msg, int codeAPI)
     {
         return DockerError(DOCKER_ERROR, msg, codeAPI);
     }

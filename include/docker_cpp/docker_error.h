@@ -1,7 +1,7 @@
 #ifndef _DOCKER_ERROR_H
 #define _DOCKER_ERROR_H
 
-#include "docker_types.h"
+#include "docker_cpp/docker_types.h"
 
 #include <string>
 #include <iostream>
@@ -14,9 +14,9 @@ namespace docker_cpp {
             bool isError();
             friend std::ostream& operator<<(std::ostream& os, const DockerError& err);
 
-            static DockerError OK();
-            static DockerError INFO(const std::string& msg, int codeAPI);
-            static DockerError ERROR(const std::string& msg, int codeAPI);
+            static DockerError D_OK();
+            static DockerError D_INFO(const std::string& msg, int codeAPI);
+            static DockerError D_ERROR(const std::string& msg, int codeAPI);
 
             std::string msg;
             dockErr errorCode;

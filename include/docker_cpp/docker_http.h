@@ -1,13 +1,13 @@
 #ifndef _DOCKER_HTTPSERVER_H
 #define _DOCKER_HTTPSERVER_H
 
-#include <string>
-#include <map>
-
 #include <asl/String.h>
 #include <asl/Http.h>
 
-#include <type_traits>
+#include <string>
+#include <sstream>
+#include <map>
+//#include <type_traits>
 
 namespace docker_cpp
 {
