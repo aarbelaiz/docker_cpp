@@ -18,7 +18,7 @@ namespace docker_cpp
     {
         asl::HttpResponse _fromFile(const std::string& uri, const std::string& method) { 
             asl::String filename = asl::String(uri.c_str()).split("/v1.")[0];
-            asl::String filepath = asl::String(TEST_RESPONSES_PATH) + "/" + filename + "_get.json";
+            asl::String filepath = asl::String(TEST_RESPONSES_PATH) + "/" + filename + "_" + asl::String(method.c_str()) + ".json";
             asl::Array<byte> data = asl::File(filepath, asl::File::READ).content();
             asl::HttpResponse r = asl::HttpResponse();
             r.put(data);

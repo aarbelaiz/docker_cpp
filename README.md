@@ -27,11 +27,11 @@ if (ok) {
 For example, to get the collection of images in the docker server:
 
 ```c++
- ImageList images;  // Data structure for a list images : vector<ImageInfo>
- DockerError err = docker.images(images);
+ ImageList images;
+ DockerError err = docker.image_list(images);
  if (err.isOk()) {
      // images is a vector populated with information about each docker image
-     for (auto &im : images) { // To print the id of each image
+     for (ImageInfo &im : images) { // To print the id of each image
          std::cout << "ID: " << im.id << '\n';
      }
  }else{
@@ -62,17 +62,17 @@ Developed with version [v1.40](https://docs.docker.com/engine/api/v1.40/) of the
 | Monitor events               | :x: |
 | Get data usage information   | :x: |
 | __Images__                   | -  |
-| List images                  | :clock9: |
+| List images                  | :heavy_check_mark: |
 | Build an image               | :clock9: |
 | Delete builder cache         | :x: |
 | Create an image              | :clock9: |
 | Inspect an image             | :x: |
 | Get history of an image      | :x: |
 | Push an image                | :x: |
-| Tag an image                 | :clock9: |
-| Remove an image              | :clock9: |
+| Tag an image                 | :heavy_check_mark: |
+| Remove an image              | :heavy_check_mark: |
 | Search images                | :x: |
-| Delete unused images         | :clock9: |
+| Delete unused images         | :heavy_check_mark: |
 | Create a new image from cont.| :x: |
 | Export an image              | :x: |
 | Export several images        | :x: |

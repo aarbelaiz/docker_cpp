@@ -7,6 +7,8 @@
 #include "docker_parse.h"
 
 #include <string>
+#include <map>
+#include <numeric>
 
 #include <asl/JSON.h>
 
@@ -14,9 +16,21 @@
 
 namespace docker_cpp
 {
+	inline std::string _map_to_string(const std::map<std::string, std::string> &in)
+	{
+		if (in.empty()) return "";
+		const std::string delimiter = ",";
+		const std::string result = std::accumulate(in.begin(), in.end(), std::string(),
+		[delimiter](const std::string& s, const std::pair<const std::string, std::string>& p) {
+			return s + (s.empty() ? std::string() : delimiter) + '"' + p.first + "\":\"" + p.second + '"';
+		});
+		return '{' + result + '}';
+	}
+
 	template <typename T>
 	class DOCKER_CPP_API Docker
 	{
+		typedef std::map<std::string, std::string> filter_map;
 		static_assert(std::is_base_of<DockerHttpInterface<T>, T>::value, "T must derive from DockerHttpInterface");
 
 	public:
@@ -60,16 +74,19 @@ namespace docker_cpp
 		 * Returns a list of images on the server.
 		 * @param [in,out] result A list of information (imageInfo) of each image in the server
 		 * @param [in] all Show all images. Only images from a final layer (no children) are shown by default (default: false)
+		 * @param [in] filters A map of key/value filters
 		 * @param [in] digests Show digest information as a RepoDigests field on each image (default: false)
 		 * @returns DockerError
 		 */
-		DockerError images(ImageList &result, bool all = false, bool digests = false)
+		DockerError image_list(ImageList &result, bool all = false, const filter_map& filters = filter_map(), bool digests = false)
 		{
 			std::string url = _endpoint + "/images/json?";
-			url += query_params(q_arg("all", all), q_arg("digests", digests));
+			url += query_params(q_arg("all", all),
+								q_arg("filters", _map_to_string(filters)),
+								q_arg("digests", digests));
 			return _checkAndParse(_server.get(url), result);
 		}
-		//DockerError buildImage(const std::string &id);
+		//DockerError image_build(const std::string &id);
 
 		/**
 		 * Create an image by either pulling it from a registry or importing it.
@@ -81,11 +98,13 @@ namespace docker_cpp
 		 * @param [in] platform Platform in the format os[/arch[/variant]] (default: "").
 		 * @returns DockerError
 		 */
-		DockerError createImage(const std::string &fromImage, const std::string &fromSrc, const std::string &repo, const std::string &tag, const std::string &message, const std::string &platform = "")
+		DockerError image_create(const std::string &fromImage, const std::string &fromSrc, const std::string &repo, const std::string &tag, const std::string &message, const std::string &platform = "")
 		{
 			std::string url = _endpoint + "/images/create/json?";
-			url += query_params(q_arg("fromImage", fromImage));
-			return _checkError(_server.get(url));
+			url += query_params(q_arg("fromImage", fromImage), q_arg("fromSrc", fromSrc),
+								q_arg("repo", repo), q_arg("tag", tag), q_arg("message", message),
+								q_arg("platform", platform));
+			return _checkError(_server.post(url));
 		}
 
 		/**
@@ -95,7 +114,7 @@ namespace docker_cpp
 		 * @param [in] tag The name of the new tag
 		 * @returns DockerError
 		 */
-		DockerError tagImage(const std::string &name, const std::string &repo, const std::string &tag)
+		DockerError image_tag(const std::string &name, const std::string &repo, const std::string &tag)
 		{
 			std::string url = _endpoint + "/images/" + name + "/tag/json?";
 			url += query_params(q_arg("repo", repo), q_arg("tag", tag));
@@ -109,11 +128,23 @@ namespace docker_cpp
 		 * @param [in] force Remove the image even if it is being used by stopped containers or has other tags (default: false)
 		 * @param [in] noprune Do not delete untagged parent images (default: false)
 		 */
-		DockerError removeImage(const std::string &name, bool force = false, bool noprune = false)
+		DockerError image_remove(const std::string &name, DeletedImageList &r, bool force = false, bool noprune = false)
 		{
 			std::string url = _endpoint + "/images/" + name + "/json?";
 			url += query_params(q_arg("force", force), q_arg("noprune", noprune));
-			return _checkError( _server.delet(url));
+			return _checkAndParse( _server.delet(url), r);
+		}
+
+		/**
+		 * Delete unused images.
+		 * @param [in] filters
+		 * @returns DockerError
+		 */
+		DockerError image_prune(const std::string &name, PruneInfo &r, const filter_map& filters = filter_map())
+		{
+			std::string url = _endpoint + "/images/prune/json?";
+			url += query_params(q_arg("filters", _map_to_string(filters)));
+			return _checkAndParse( _server.post(url, ""), r);
 		}
 
 		//////////// Containers
@@ -126,7 +157,7 @@ namespace docker_cpp
 		 * @param [in] size Return the size of container as fields SizeRw and SizeRootFs. (default: false)
 		 * @returns DockerError
 		 */
-		DockerError containers(ContainerList &result, bool all = false, int limit = -1, bool size = false)
+		DockerError container_list(ContainerList &result, bool all = false, int limit = -1, bool size = false)
 		{
 			std::string url = _endpoint + "/containers/json?";
 			url += query_params(q_arg("all", all), q_arg("limit", limit), q_arg("size", size));
@@ -147,7 +178,7 @@ namespace docker_cpp
 		 * @param [in] detachKeys Override the key sequence for detaching a container. Format is a single character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _.
 		 * @returns DockerError
 		 */
-		DockerError startContainer(const std::string &id, const std::string &detachKeys = "ctrl-c")
+		DockerError container_start(const std::string &id, const std::string &detachKeys = "ctrl-c")
 		{
 			const std::string url = _endpoint + "/containers/" + id + "/start/json?detachKeys=" + detachKeys;
 			return _checkError(_server.post(url, ""));
@@ -159,7 +190,7 @@ namespace docker_cpp
 		 * @param [in] t Number of seconds to wait before killing the container
 		 * @returns DockerError
 		 */
-		DockerError stopContainer(const std::string &id, int t = -1)
+		DockerError container_stop(const std::string &id, int t = -1)
 		{
 			std::string url = _endpoint + "/containers/" + id + "/stop/json?";
 			url += query_params(q_arg("t", t));
@@ -172,7 +203,7 @@ namespace docker_cpp
 		 * @param [in] t Number of seconds to wait before killing the container
 		 * @returns DockerError
 		 */
-		DockerError restartContainer(const std::string &id, int t = -1)
+		DockerError container_restart(const std::string &id, int t = -1)
 		{
 			std::string url = _endpoint + "/containers/" + id + "/restart/json?";
 			url += query_params(q_arg("t", t));
@@ -185,7 +216,7 @@ namespace docker_cpp
 		 * @param [in] signal Signal to send to the container as an integer or string e.g. SIGINT (defauult: SIGKILL)
 		 * @returns DockerError
 		 */
-		DockerError killContainer(const std::string &id, const std::string &signal = "SIGKILL")
+		DockerError container_kill(const std::string &id, const std::string &signal = "SIGKILL")
 		{
 			const std::string url = _endpoint + "/containers/" + id + "/kill/json?signal=" + signal;
 			return _checkError(_server.post(url, ""));
@@ -197,7 +228,7 @@ namespace docker_cpp
 		 * @param [in] name New name for the container
 		 * @returns DockerError
 		 */
-		DockerError renameContainer(const std::string &id, const std::string &name)
+		DockerError container_rename(const std::string &id, const std::string &name)
 		{
 			std::string url = _endpoint + "/containers/" + id + "/rename/json?";
 			url += query_params(q_arg("name", name));
@@ -211,7 +242,7 @@ namespace docker_cpp
 		 * @param [in] condition Wait until a container state reaches the given condition, either 'not-running' (default), 'next-exit', or 'removed'.
 		 * @returns DockerError
 		 */
-		DockerError waitContainer(const std::string &id, WaitInfo &result, const std::string &condition = "not-running")
+		DockerError container_wait(const std::string &id, WaitInfo &result, const std::string &condition = "not-running")
 		{
 			const std::string url = _endpoint + "/containers/" + id + "/wait/json?condition=" + condition;
 			return _checkAndParse(_server.post(url, ""), result);
@@ -225,7 +256,7 @@ namespace docker_cpp
 		 * @param [in] link If the container is running, kill it before removing it (default: false)
 		 * @returns DockerError
 		 */
-		DockerError removeContainer(const std::string &id, bool v = false, bool force = false, bool link = false)
+		DockerError container_remove(const std::string &id, bool v = false, bool force = false, bool link = false)
 		{
 			std::string url = _endpoint + "/containers/" + id + "/json?";
 			url += query_params(q_arg("v", v), q_arg("force", force), q_arg("link", link));
@@ -324,7 +355,7 @@ namespace docker_cpp
 		DockerError _checkError(const asl::HttpResponse &res)
 		{
 			int code = res.code();
-			if (code == 200 || code == 204)
+			if (code >= 200 && code < 300)
 			{
 				return DockerError::D_OK();
 			}
@@ -340,6 +371,15 @@ namespace docker_cpp
 			}
 		}
 	};
+
+	// template <typename T>
+	// class DOCKER_CPP_API DockerExtended : Docker<T>
+	// {
+	// 	//ImageList images();
+	// 	//ContainerList ps();
+	// 	//std::string build();
+	// 	//bool run();
+	// }
 } // namespace docker_cpp
 
 #endif

@@ -16,7 +16,7 @@ namespace docker_cpp
 
     bool DockerError::isError()
     {
-        return errorCode == DOCKER_ERROR;
+        return errorCode == DOCKER_ERROR || errorCode == DOCKER_INFO;
     }
 
     DockerError DockerError::D_OK()

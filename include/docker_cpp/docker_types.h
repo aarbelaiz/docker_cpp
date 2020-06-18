@@ -33,6 +33,20 @@ namespace docker_cpp
 
     using ImageList = std::vector<ImageInfo>;
 
+    struct DOCKER_CPP_API DeletedImageInfo
+    {
+        std::string untagged; //!< The image ID of an image that was untagged
+        std::string deleted; //!< The image ID of an image that was deleted
+    };
+
+    using DeletedImageList = std::vector<DeletedImageInfo>;
+    
+    struct DOCKER_CPP_API PruneInfo
+    {
+        DeletedImageList imagesDeleted; //!< Images that were deleted
+        signed long spaceReclaimed; //!< Disk space reclaimed in bytes
+    };
+
     /////////// CONTAINER
 
     struct DOCKER_CPP_API Port {

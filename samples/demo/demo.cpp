@@ -31,7 +31,7 @@ int main()
 
 	// List images
 	ImageList res;
-	err = docker.images(res);
+	err = docker.image_list(res);
 	if (err.isOk()) {
 		std::cout << "--- IMAGES ----" << '\n';
 		std::cout << std::left << std::setw(75) << "IMAGE ID" << std::left << std::setw(35) << "REPO" 
@@ -49,7 +49,7 @@ int main()
 
 	// List containers
 	ContainerList containers;
-	err = docker.containers(containers, true);
+	err = docker.container_list(containers, true);
 	if (err.isError()) {
 		std::cout << err << '\n';
 		return EXIT_FAILURE;
