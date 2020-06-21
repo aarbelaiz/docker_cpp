@@ -20,7 +20,7 @@ configure_file(test_config.h.in test_config.h @ONLY)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-set(SRC test_docker.cpp test_docker_system.cpp test_docker_image.cpp)
+set(SRC test_docker.cpp test_docker_system.cpp test_docker_image.cpp test_docker_exec.cpp)
 set(HEADERS test_utils.h test_config.h)
 
 add_executable(${TARGET} ${SRC} ${HEADERS})

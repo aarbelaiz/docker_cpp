@@ -51,6 +51,8 @@ Developed with version [v1.40](https://docs.docker.com/engine/api/v1.40/) of the
 
 ### API coverage
 
+(:100: Tested, :heavy_check_mark: It may work, untested :clock9: planned, :x: Not supported)
+
 | API Feature                  | Supported |
 | :--------------------------- | --------: |
 | __Authentication__           | :x: |
@@ -105,10 +107,10 @@ Developed with version [v1.40](https://docs.docker.com/engine/api/v1.40/) of the
 | __Networks__       | :x:  |
 | __Volumes__        | :x:  |
 | __Exec__           |      |
-| Create an exec instance      | :clock9: |
-| Start an exec instance       | :clock9: |
-| Resize an exec instance      | :clock9: |
-| Inspect an exec instance     | :clock9: |
+| Create an exec instance      | :heavy_check_mark: |
+| Start an exec instance       | :heavy_check_mark: |
+| Resize an exec instance      | :heavy_check_mark: |
+| Inspect an exec instance     | :heavy_check_mark: |
 | __Swarm__          | :x:  |
 | __Nodes__          | :x:  |
 | __Services__       | :x:  |

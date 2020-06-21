@@ -178,27 +178,26 @@ namespace docker_cpp
 	{
 		out.canRemove = in["CanRemove"];
 		out.detachKeys = *(in["DetachKeys"].toString());
-		out.id = *(in["Id"].toString());
+		out.exitCode = in["ExitCode"];
+		out.id = *(in["ID"].toString());
 		out.running = in["Running"];
-		if (in.has("ProcessConfig"))
-		{
-			ProcessConfigInfo process;
-			asl::Var p = in["ProcessConfig"];
-			process.privileged = p["privileged"];
-			process.user = *p["user"].toString();
-			process.tty = p["tty"];
-			process.entrypoint = *p["entrypoint"].toString();
-			foreach (asl::Var &arg, p["arguments"])
-			{
-				process.arguments.push_back(*arg.toString());
-			}
-			out.processConfig = process;
-		}
 		out.openStdin = in["OpenStdin"];
 		out.openStderr = in["OpenStderr"];
 		out.openStdout = in["OpenStdout"];
 		out.containerID = *(in["ContainerID"].toString());
 		out.pid = in["Pid"];
+		if (in.has("ProcessConfig"))
+		{
+			asl::Var p = in["ProcessConfig"];
+			out.processConfig.privileged = p["privileged"];
+			out.processConfig.user = *(p["user"].toString());
+			out.processConfig.tty = p["tty"];
+			out.processConfig.entrypoint = *(p["entrypoint"].toString());
+			foreach (asl::Var &arg, p["arguments"])
+			{
+				out.processConfig.arguments.push_back(*arg.toString());
+			}
+		}
 	}
 
 } // namespace docker_cpp

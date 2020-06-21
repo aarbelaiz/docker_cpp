@@ -41,7 +41,7 @@ namespace docker_cpp
 
 		Docker(const std::string &ip, const unsigned int port)
 		{
-			Docker("http://" + ip + ":" + std::to_string(port), _server);
+			Docker("http://" + ip + ":" + std::to_string(port), _net);
 		}
 
 		~Docker() = default;
@@ -56,7 +56,7 @@ namespace docker_cpp
 		DockerError version(VersionInfo &result)
 		{
 			const std::string url = _endpoint + "/version/json";
-			return _checkAndParse(_server.get(url), result);
+			return _checkAndParse(_net.get(url), result);
 		}
 
 		/**
@@ -65,7 +65,7 @@ namespace docker_cpp
 		DockerError ping()
 		{
 			const std::string url = _endpoint + "/_ping";
-			return _checkError(_server.get(url));
+			return _checkError(_net.get(url));
 		}
 
 		//////////// Images
@@ -80,11 +80,11 @@ namespace docker_cpp
 		 */
 		DockerError imageList(ImageList &result, bool all = false, const filter_map& filters = filter_map(), bool digests = false)
 		{
-			std::string url = _endpoint + "/images/json?";
+			std::string url = _endpoint + "/images/json";
 			url += query_params(q_arg("all", all),
 								q_arg("filters", _map_to_string(filters)),
 								q_arg("digests", digests));
-			return _checkAndParse(_server.get(url), result);
+			return _checkAndParse(_net.get(url), result);
 		}
 		//DockerError image_build(const std::string &id);
 
@@ -100,11 +100,11 @@ namespace docker_cpp
 		 */
 		DockerError imageCreate(const std::string &fromImage, const std::string &fromSrc, const std::string &repo, const std::string &tag, const std::string &message, const std::string &platform = "")
 		{
-			std::string url = _endpoint + "/images/create/json?";
+			std::string url = _endpoint + "/images/create/json";
 			url += query_params(q_arg("fromImage", fromImage), q_arg("fromSrc", fromSrc),
 								q_arg("repo", repo), q_arg("tag", tag), q_arg("message", message),
 								q_arg("platform", platform));
-			return _checkError(_server.post(url));
+			return _checkError(_net.post(url));
 		}
 
 		/**
@@ -116,9 +116,9 @@ namespace docker_cpp
 		 */
 		DockerError imageTag(const std::string &name, const std::string &repo, const std::string &tag)
 		{
-			std::string url = _endpoint + "/images/" + name + "/tag/json?";
+			std::string url = _endpoint + "/images/" + name + "/tag/json";
 			url += query_params(q_arg("repo", repo), q_arg("tag", tag));
-			return _checkError(_server.post(url, ""));
+			return _checkError(_net.post(url, ""));
 		}
 
 		/**
@@ -130,9 +130,9 @@ namespace docker_cpp
 		 */
 		DockerError imageRemove(const std::string &name, DeletedImageList &r, bool force = false, bool noprune = false)
 		{
-			std::string url = _endpoint + "/images/" + name + "/json?";
+			std::string url = _endpoint + "/images/" + name + "/json";
 			url += query_params(q_arg("force", force), q_arg("noprune", noprune));
-			return _checkAndParse( _server.delet(url), r);
+			return _checkAndParse( _net.delet(url), r);
 		}
 
 		/**
@@ -142,9 +142,9 @@ namespace docker_cpp
 		 */
 		DockerError imagePrune(const std::string &name, PruneInfo &r, const filter_map& filters = filter_map())
 		{
-			std::string url = _endpoint + "/images/prune/json?";
+			std::string url = _endpoint + "/images/prune/json";
 			url += query_params(q_arg("filters", _map_to_string(filters)));
-			return _checkAndParse( _server.post(url, ""), r);
+			return _checkAndParse( _net.post(url, ""), r);
 		}
 
 		//////////// Containers
@@ -160,10 +160,10 @@ namespace docker_cpp
 		 */
 		DockerError containerList(ContainerList &result, bool all = false, int limit = -1, bool size = false, const filter_map& filters = filter_map())
 		{
-			std::string url = _endpoint + "/containers/json?";
+			std::string url = _endpoint + "/containers/json";
 			url += query_params(q_arg("all", all), q_arg("limit", limit), q_arg("size", size),
 								q_arg("filters", _map_to_string(filters)));
-			auto res = _server.get(url);
+			auto res = _net.get(url);
 			DockerError err = _checkError(res);
 			if (!err.isOk())
 				return err;
@@ -182,9 +182,9 @@ namespace docker_cpp
 		 */
 		DockerError containerStart(const std::string &id, const std::string &detachKeys = "ctrl-c")
 		{
-			std::string url = _endpoint + "/containers/" + id + "/start/json?";
+			std::string url = _endpoint + "/containers/" + id + "/start/json";
 			url += query_params(q_arg("detachKeys", detachKeys));
-			return _checkError(_server.post(url, ""));
+			return _checkError(_net.post(url, ""));
 		}
 
 		/**
@@ -195,9 +195,9 @@ namespace docker_cpp
 		 */
 		DockerError containerStop(const std::string &id, int t = -1)
 		{
-			std::string url = _endpoint + "/containers/" + id + "/stop/json?";
+			std::string url = _endpoint + "/containers/" + id + "/stop/json";
 			url += query_params(q_arg("t", t));
-			return _checkError(_server.post(url, ""));
+			return _checkError(_net.post(url, ""));
 		}
 
 		/**
@@ -208,9 +208,9 @@ namespace docker_cpp
 		 */
 		DockerError containerRestart(const std::string &id, int t = -1)
 		{
-			std::string url = _endpoint + "/containers/" + id + "/restart?";
+			std::string url = _endpoint + "/containers/" + id + "/restart";
 			url += query_params(q_arg("t", t));
-			return _checkError(_server.post(url, ""));
+			return _checkError(_net.post(url, ""));
 		}
 
 		/**
@@ -221,9 +221,9 @@ namespace docker_cpp
 		 */
 		DockerError containerKill(const std::string &id, const std::string &signal = "SIGKILL")
 		{
-			std::string url = _endpoint + "/containers/" + id + "/kill?";
+			std::string url = _endpoint + "/containers/" + id + "/kill";
 			url += query_params(q_arg("signal", signal));
-			return _checkError(_server.post(url, ""));
+			return _checkError(_net.post(url, ""));
 		}
 
 		/**
@@ -234,9 +234,9 @@ namespace docker_cpp
 		 */
 		DockerError containerRename(const std::string &id, const std::string &name)
 		{
-			std::string url = _endpoint + "/containers/" + id + "/rename?";
+			std::string url = _endpoint + "/containers/" + id + "/rename";
 			url += query_params(q_arg("name", name));
-			return _checkError(_server.post(url, ""));
+			return _checkError(_net.post(url, ""));
 		}
 
 		/**
@@ -249,7 +249,7 @@ namespace docker_cpp
 		DockerError containerPause(const std::string &id)
 		{
 			const std::string url = _endpoint + "/containers/" + id + "/pause";
-			return _checkError(_server.post(url, ""));
+			return _checkError(_net.post(url, ""));
 		}
 
 		/**
@@ -260,7 +260,7 @@ namespace docker_cpp
 		DockerError containerUnpause(const std::string &id)
 		{
 			const std::string url = _endpoint + "/containers/" + id + "/unpause";
-			return _checkError(_server.post(url, ""));
+			return _checkError(_net.post(url, ""));
 		}
 
 		/**
@@ -272,9 +272,9 @@ namespace docker_cpp
 		 */
 		DockerError containerWait(const std::string &id, WaitInfo &result, const std::string &condition = "not-running")
 		{
-			std::string url = _endpoint + "/containers/" + id + "/wait?";
+			std::string url = _endpoint + "/containers/" + id + "/wait";
 			url += query_params(q_arg("condition", condition));
-			return _checkAndParse(_server.post(url, ""), result);
+			return _checkAndParse(_net.post(url, ""), result);
 		}
 
 		/**
@@ -287,9 +287,9 @@ namespace docker_cpp
 		 */
 		DockerError container_remove(const std::string &id, bool v = false, bool force = false, bool link = false)
 		{
-			std::string url = _endpoint + "/containers/" + id + "/json?";
+			std::string url = _endpoint + "/containers/" + id + "/json";
 			url += query_params(q_arg("v", v), q_arg("force", force), q_arg("link", link));
-			return _checkError(_server->delet(url));
+			return _checkError(_net.delet(url));
 		}
 
 		////////// Exec
@@ -304,7 +304,7 @@ namespace docker_cpp
 		DockerError execCreateInstance(const std::string &id, const ExecConfig &config, std::string &execId)
 		{
 			const std::string url = _endpoint + "/containers/" + id + "/exec";
-			auto res = _server->post(url, config.str());
+			auto res = _net.post(url, config.str());
 			DockerError err = _checkError(res);
 			if (err.isError())
 				return err;
@@ -327,7 +327,7 @@ namespace docker_cpp
 			const std::string url = _endpoint + "/exec/" + id + "/start";
 			std::stringstream ss;
 			ss << std::boolalpha << "{\"detach\":\"" << detach << "\",\"tty\":" << tty << "\"}";
-			return _checkError(_server->post(url, ss.str()));
+			return _checkError(_net.post(url, ss.str()));
 		}
 
 		/**
@@ -340,9 +340,9 @@ namespace docker_cpp
 		 */
 		DockerError execResizeInstance(const std::string &id, int h, int w)
 		{
-			std::string url = _endpoint + "/exec/" + id + "/resize?";
+			std::string url = _endpoint + "/exec/" + id + "/resize";
 			url += query_params(q_arg("h", h), q_arg("w", w));
-			return _checkError(_server->post(url, ""));
+			return _checkError(_net.post(url, ""));
 		}
 
 		/**
@@ -353,13 +353,13 @@ namespace docker_cpp
 		 */
 		DockerError execInspectInstance(const std::string &id, ExecInfo &result)
 		{
-			const std::string url = _endpoint + "/exec/" + id + "/json?";
-			auto res = _server->get(url);
+			const std::string url = _endpoint + "/exec/" + id + "/json";
+			auto res = _net.get(url);
 			DockerError err = _checkError(res);
 			if (err.isError())
 				return err;
-			asl::Var data = asl::Json::decode(res.text().replace("\\\"", "")); // AAA: scaping is necessary for commands
-			parse(&data, result);
+			auto data = asl::Json::decode(res.text().replace("\\\"", "")); // AAA: scaping is necessary for commands
+			parse(data, result);
 			return err;
 		}
 
@@ -369,7 +369,7 @@ namespace docker_cpp
 
 	private:
 		std::string _endpoint;
-		T _server;
+		T _net;
 
 		template <typename U>
 		DockerError _checkAndParse(const asl::HttpResponse &res, U& d){
