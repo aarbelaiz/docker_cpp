@@ -28,7 +28,7 @@ For example, to get the collection of images in the docker server:
 
 ```c++
  ImageList images;
- DockerError err = docker.image_list(images);
+ DockerError err = docker.imageList(images);
  if (err.isOk()) {
      // images is a vector populated with information about each docker image
      for (ImageInfo &im : images) { // To print the id of each image
@@ -51,7 +51,7 @@ Developed with version [v1.40](https://docs.docker.com/engine/api/v1.40/) of the
 
 ### API coverage
 
-(:100: Tested, :heavy_check_mark: It may work, untested :clock9: planned, :x: Not supported)
+(:100:: Tested, :heavy_check_mark:: It may work, :clock9:: planned, :x:: Not supported)
 
 | API Feature                  | Supported |
 | :--------------------------- | --------: |
