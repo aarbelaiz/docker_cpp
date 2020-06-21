@@ -12,7 +12,7 @@ TEST_SUITE("SYSTEM") {
     }
 
     TEST_CASE("Check PING handles ERROR") {
-        Docker<MockErrorHttp> d("mocked");
+        Docker<MockErrorHttp> d("500");
         DockerError e = d.ping();
         CHECK(e.isOk() == false);
         CHECK(e.isError() == true);
@@ -25,7 +25,7 @@ TEST_SUITE("SYSTEM") {
     }
 
     TEST_CASE("Check connection method fails") {
-        Docker<MockErrorHttp> d("mocked");
+        Docker<MockErrorHttp> d("500");
         bool r = d.checkConnection();
         CHECK(r == false);
     }
@@ -49,7 +49,7 @@ TEST_SUITE("SYSTEM") {
     }
 
     TEST_CASE("Check VERSION handles ERROR") {
-        Docker<MockErrorHttp> d("mock");
+        Docker<MockErrorHttp> d("500");
         VersionInfo i;
         DockerError e = d.version(i);
         CHECK(e.isOk() == false);

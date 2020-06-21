@@ -7,55 +7,52 @@
 #include <string>
 #include <sstream>
 #include <map>
+
+#include <cstring>
 //#include <type_traits>
 
 namespace docker_cpp
 {
 	template<typename T>
-	std::string query_params(const std::pair<std::string, T>& value)
+	inline bool query_param_is_empty(const std::pair<std::string, T>& value)
+	{ return false; }
+
+	inline bool query_param_is_empty(const std::pair<std::string, int>& value)
+	{ return value.second < 0; }
+
+	inline bool query_param_is_empty(const std::pair<std::string, std::string>& value)
+	{ return value.second.empty(); }
+
+	inline bool query_param_is_empty(const std::pair<std::string, const char*>& value)
+	{ return strlen(value.second) == 0; }
+
+	template<typename T>
+	void acc_query_params(std::string& s, const std::pair<std::string, T>& value)
 	{
-		std::ostringstream oss;
-		oss << std::boolalpha << value.first << "=" << value.second;
-		return oss.str();
+		std::string t;
+		if (!query_param_is_empty(value)) {
+			std::ostringstream oss;
+			oss << std::boolalpha << value.first << "=" << value.second;
+			t = std::move(oss.str());
+		}else{
+			t = std::string();
+		}
+		s = s + (s.empty() || t.empty() ? "" : "&" ) + t;
 	}
 
-	inline std::string query_params(const std::pair<std::string, int>& value)
+	template<typename T, typename ...Args>
+	void acc_query_params(std::string& s, const std::pair<std::string, T>& value, const Args& ...args)
 	{
-		if (value.second >= 0) {
-			std::ostringstream oss;
-			oss << value.first << "=" << value.second;
-			return oss.str();
-		}else{
-			return std::string();
-		}
-	}
-
-	inline std::string query_params(const std::pair<std::string, char>& value)
-	{
-		if (value.second != '\0') {
-			std::ostringstream oss;
-			oss << value.first << "=" << value.second;
-			return oss.str();
-		}else{
-			return std::string();
-		}
-	}
-
-	inline std::string query_params(const std::pair<std::string, std::string>& value)
-	{
-		if (!value.second.empty()) {
-			std::ostringstream oss;
-			oss << value.first << "=" << value.second;
-			return oss.str();
-		}else{
-			return std::string();
-		}
+		acc_query_params(s, value);
+		acc_query_params(s, args...);
 	}
 
 	template<typename T, typename ...Args>
 	std::string query_params(const std::pair<std::string, T>& value, const Args& ...args)
 	{
-		return query_params(value) + "&" + query_params(args...);
+		std::string params_uri;
+		acc_query_params(params_uri, value, args...);
+		return !params_uri.empty() ? "?" + params_uri : std::string();
 	}
 
 	template<typename T>

@@ -182,7 +182,7 @@ namespace docker_cpp
 		out.running = in["Running"];
 		if (in.has("ProcessConfig"))
 		{
-			ProcessConfig process;
+			ProcessConfigInfo process;
 			asl::Var p = in["ProcessConfig"];
 			process.privileged = p["privileged"];
 			process.user = *p["user"].toString();

@@ -7,7 +7,7 @@ TEST_SUITE("IMAGE") {
     TEST_CASE("Check image_list returns a list of images") {
         Docker<MockResponseHttp> d("image_list");
         ImageList r;
-        DockerError e = d.image_list(r);
+        DockerError e = d.imageList(r);
         CHECK(e.isOk() == true);
         CHECK(e.isError() == false);
         CHECK(r.size() > 0);
@@ -29,7 +29,7 @@ TEST_SUITE("IMAGE") {
     TEST_CASE("Check image_list handles error response") {
         Docker<MockErrorHttp> d("500");
         ImageList r;
-        DockerError e = d.image_list(r);
+        DockerError e = d.imageList(r);
         CHECK(e.isOk() == false);
         CHECK(e.isError() == true);
         CHECK(e.msg.empty() == false);
@@ -37,7 +37,7 @@ TEST_SUITE("IMAGE") {
 
     TEST_CASE("Check image_tag returns OK") {
         Docker<MockResponseHttp> d("image_tag");
-        DockerError e = d.image_tag("foo", "bar", "test");
+        DockerError e = d.imageTag("foo", "bar", "test");
         CHECK(e.isOk() == true);
         CHECK(e.isError() == false);
     }
@@ -45,7 +45,7 @@ TEST_SUITE("IMAGE") {
     TEST_CASE("Check image_tag handles Errors") {
         Docker<MockErrorHttp> d("500");
         ImageList r;
-        DockerError e = d.image_tag("foo", "bar", "test");
+        DockerError e = d.imageTag("foo", "bar", "test");
         CHECK(e.isOk() == false);
         CHECK(e.isError() == true);
         CHECK(e.msg.empty() == false);
@@ -54,7 +54,7 @@ TEST_SUITE("IMAGE") {
     TEST_CASE("Check image_remove returns OK") {
         Docker<MockResponseHttp> d("image_remove");
         DeletedImageList r;
-        DockerError e = d.image_remove("foo", r);
+        DockerError e = d.imageRemove("foo", r);
         CHECK(e.isOk() == true);
         CHECK(e.isError() == false);
         CHECK(r.size() > 0);
@@ -65,7 +65,7 @@ TEST_SUITE("IMAGE") {
     TEST_CASE("Check image_remove handles Errors") {
         Docker<MockErrorHttp> d("500");
         DeletedImageList r;
-        DockerError e = d.image_remove("foo", r);
+        DockerError e = d.imageRemove("foo", r);
         CHECK(e.isOk() == false);
         CHECK(e.isError() == true);
         CHECK(e.msg.empty() == false);
@@ -74,7 +74,7 @@ TEST_SUITE("IMAGE") {
     TEST_CASE("Check image_prune returns OK") {
         Docker<MockResponseHttp> d("image_prune");
         PruneInfo r;
-        DockerError e = d.image_prune("foo", r);
+        DockerError e = d.imagePrune("foo", r);
         CHECK(e.isOk() == true);
         CHECK(e.isError() == false);
         CHECK(r.imagesDeleted.size() > 0);
@@ -86,7 +86,7 @@ TEST_SUITE("IMAGE") {
     TEST_CASE("Check image_prune handles Errors") {
         Docker<MockErrorHttp> d("500");
         PruneInfo r;
-        DockerError e = d.image_prune("foo", r);
+        DockerError e = d.imagePrune("foo", r);
         CHECK(e.isOk() == false);
         CHECK(e.isError() == true);
         CHECK(e.msg.empty() == false);

@@ -3,9 +3,6 @@
 
 #include "test_config.h"
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
-
 #include <docker_cpp/docker.h>
 
 #include <asl/File.h>
@@ -51,34 +48,34 @@ namespace docker_cpp
 
     struct MockErrorHttp : DockerHttpInterface<MockErrorHttp>
     {
+        asl::HttpResponse _errorFromUri(const std::string &uri) {
+            asl::String error_code = asl::String(uri.c_str()).split("/v1.")[0];
+            int errCode = (int)error_code;
+            auto r = asl::HttpResponse();
+            r.setCode(errCode);
+            return r;
+        }
+
         asl::HttpResponse getImpl(const std::string &uri, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())
         {
-            auto r = asl::HttpResponse();
-            r.setCode(500);
-            return r;
+            return _errorFromUri(uri);
         }
 
 		template <typename T>
 		asl::HttpResponse postImpl(const std::string &uri, const T &body, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())
 		{ 
-			auto r = asl::HttpResponse();
-            r.setCode(500);
-            return r;
+            return _errorFromUri(uri);
 		};
 
 		template <typename T>
 		asl::HttpResponse putImpl(const std::string &uri, const T &body, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())
 		{ 
-			auto r = asl::HttpResponse();
-            r.setCode(500);
-            return r;
+            return _errorFromUri(uri);
 		};
 
 		asl::HttpResponse deletImpl(const std::string &uri, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())
 		{
-			auto r = asl::HttpResponse();
-            r.setCode(500);
-            return r;
+            return _errorFromUri(uri);
 		};
     };
 }

@@ -78,7 +78,7 @@ namespace docker_cpp
 		 * @param [in] digests Show digest information as a RepoDigests field on each image (default: false)
 		 * @returns DockerError
 		 */
-		DockerError image_list(ImageList &result, bool all = false, const filter_map& filters = filter_map(), bool digests = false)
+		DockerError imageList(ImageList &result, bool all = false, const filter_map& filters = filter_map(), bool digests = false)
 		{
 			std::string url = _endpoint + "/images/json?";
 			url += query_params(q_arg("all", all),
@@ -98,7 +98,7 @@ namespace docker_cpp
 		 * @param [in] platform Platform in the format os[/arch[/variant]] (default: "").
 		 * @returns DockerError
 		 */
-		DockerError image_create(const std::string &fromImage, const std::string &fromSrc, const std::string &repo, const std::string &tag, const std::string &message, const std::string &platform = "")
+		DockerError imageCreate(const std::string &fromImage, const std::string &fromSrc, const std::string &repo, const std::string &tag, const std::string &message, const std::string &platform = "")
 		{
 			std::string url = _endpoint + "/images/create/json?";
 			url += query_params(q_arg("fromImage", fromImage), q_arg("fromSrc", fromSrc),
@@ -114,7 +114,7 @@ namespace docker_cpp
 		 * @param [in] tag The name of the new tag
 		 * @returns DockerError
 		 */
-		DockerError image_tag(const std::string &name, const std::string &repo, const std::string &tag)
+		DockerError imageTag(const std::string &name, const std::string &repo, const std::string &tag)
 		{
 			std::string url = _endpoint + "/images/" + name + "/tag/json?";
 			url += query_params(q_arg("repo", repo), q_arg("tag", tag));
@@ -128,7 +128,7 @@ namespace docker_cpp
 		 * @param [in] force Remove the image even if it is being used by stopped containers or has other tags (default: false)
 		 * @param [in] noprune Do not delete untagged parent images (default: false)
 		 */
-		DockerError image_remove(const std::string &name, DeletedImageList &r, bool force = false, bool noprune = false)
+		DockerError imageRemove(const std::string &name, DeletedImageList &r, bool force = false, bool noprune = false)
 		{
 			std::string url = _endpoint + "/images/" + name + "/json?";
 			url += query_params(q_arg("force", force), q_arg("noprune", noprune));
@@ -140,7 +140,7 @@ namespace docker_cpp
 		 * @param [in] filters
 		 * @returns DockerError
 		 */
-		DockerError image_prune(const std::string &name, PruneInfo &r, const filter_map& filters = filter_map())
+		DockerError imagePrune(const std::string &name, PruneInfo &r, const filter_map& filters = filter_map())
 		{
 			std::string url = _endpoint + "/images/prune/json?";
 			url += query_params(q_arg("filters", _map_to_string(filters)));
@@ -155,12 +155,14 @@ namespace docker_cpp
 		 * @param [in] all Return all containers. By default, only running containers are shown (default: false)
 		 * @param [in] limit Return this number of most recently created containers, including non-running ones
 		 * @param [in] size Return the size of container as fields SizeRw and SizeRootFs. (default: false)
+		 * @param [in] filters Filters to process on the container list.
 		 * @returns DockerError
 		 */
-		DockerError container_list(ContainerList &result, bool all = false, int limit = -1, bool size = false)
+		DockerError containerList(ContainerList &result, bool all = false, int limit = -1, bool size = false, const filter_map& filters = filter_map())
 		{
 			std::string url = _endpoint + "/containers/json?";
-			url += query_params(q_arg("all", all), q_arg("limit", limit), q_arg("size", size));
+			url += query_params(q_arg("all", all), q_arg("limit", limit), q_arg("size", size),
+								q_arg("filters", _map_to_string(filters)));
 			auto res = _server.get(url);
 			DockerError err = _checkError(res);
 			if (!err.isOk())
@@ -178,9 +180,10 @@ namespace docker_cpp
 		 * @param [in] detachKeys Override the key sequence for detaching a container. Format is a single character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _.
 		 * @returns DockerError
 		 */
-		DockerError container_start(const std::string &id, const std::string &detachKeys = "ctrl-c")
+		DockerError containerStart(const std::string &id, const std::string &detachKeys = "ctrl-c")
 		{
-			const std::string url = _endpoint + "/containers/" + id + "/start/json?detachKeys=" + detachKeys;
+			std::string url = _endpoint + "/containers/" + id + "/start/json?";
+			url += query_params(q_arg("detachKeys", detachKeys));
 			return _checkError(_server.post(url, ""));
 		}
 
@@ -190,7 +193,7 @@ namespace docker_cpp
 		 * @param [in] t Number of seconds to wait before killing the container
 		 * @returns DockerError
 		 */
-		DockerError container_stop(const std::string &id, int t = -1)
+		DockerError containerStop(const std::string &id, int t = -1)
 		{
 			std::string url = _endpoint + "/containers/" + id + "/stop/json?";
 			url += query_params(q_arg("t", t));
@@ -203,9 +206,9 @@ namespace docker_cpp
 		 * @param [in] t Number of seconds to wait before killing the container
 		 * @returns DockerError
 		 */
-		DockerError container_restart(const std::string &id, int t = -1)
+		DockerError containerRestart(const std::string &id, int t = -1)
 		{
-			std::string url = _endpoint + "/containers/" + id + "/restart/json?";
+			std::string url = _endpoint + "/containers/" + id + "/restart?";
 			url += query_params(q_arg("t", t));
 			return _checkError(_server.post(url, ""));
 		}
@@ -216,9 +219,10 @@ namespace docker_cpp
 		 * @param [in] signal Signal to send to the container as an integer or string e.g. SIGINT (defauult: SIGKILL)
 		 * @returns DockerError
 		 */
-		DockerError container_kill(const std::string &id, const std::string &signal = "SIGKILL")
+		DockerError containerKill(const std::string &id, const std::string &signal = "SIGKILL")
 		{
-			const std::string url = _endpoint + "/containers/" + id + "/kill/json?signal=" + signal;
+			std::string url = _endpoint + "/containers/" + id + "/kill?";
+			url += query_params(q_arg("signal", signal));
 			return _checkError(_server.post(url, ""));
 		}
 
@@ -228,10 +232,34 @@ namespace docker_cpp
 		 * @param [in] name New name for the container
 		 * @returns DockerError
 		 */
-		DockerError container_rename(const std::string &id, const std::string &name)
+		DockerError containerRename(const std::string &id, const std::string &name)
 		{
-			std::string url = _endpoint + "/containers/" + id + "/rename/json?";
+			std::string url = _endpoint + "/containers/" + id + "/rename?";
 			url += query_params(q_arg("name", name));
+			return _checkError(_server.post(url, ""));
+		}
+
+		/**
+		 * Pause a container.
+		 * Use the freezer cgroup to suspend all processes in a container.
+		 * With the freezer cgroup the process is unaware, and unable to capture, that it is being suspended, and subsequently resumed.
+		 * @param [in] id ID or name of the container
+		 * @returns DockerError
+		 */
+		DockerError containerPause(const std::string &id)
+		{
+			const std::string url = _endpoint + "/containers/" + id + "/pause";
+			return _checkError(_server.post(url, ""));
+		}
+
+		/**
+		 * Resume a container which has been paused.
+		 * @param [in] id ID or name of the container
+		 * @returns DockerError
+		 */
+		DockerError containerUnpause(const std::string &id)
+		{
+			const std::string url = _endpoint + "/containers/" + id + "/unpause";
 			return _checkError(_server.post(url, ""));
 		}
 
@@ -242,9 +270,10 @@ namespace docker_cpp
 		 * @param [in] condition Wait until a container state reaches the given condition, either 'not-running' (default), 'next-exit', or 'removed'.
 		 * @returns DockerError
 		 */
-		DockerError container_wait(const std::string &id, WaitInfo &result, const std::string &condition = "not-running")
+		DockerError containerWait(const std::string &id, WaitInfo &result, const std::string &condition = "not-running")
 		{
-			const std::string url = _endpoint + "/containers/" + id + "/wait/json?condition=" + condition;
+			std::string url = _endpoint + "/containers/" + id + "/wait?";
+			url += query_params(q_arg("condition", condition));
 			return _checkAndParse(_server.post(url, ""), result);
 		}
 
@@ -272,11 +301,10 @@ namespace docker_cpp
 		 * @param [in,out] execId The id of the newly created instance
 		 * @returns DockerError
 		 */
-		DockerError createExecInstance(const std::string &id, const ExecConfig &config, std::string &execId)
+		DockerError execCreateInstance(const std::string &id, const ExecConfig &config, std::string &execId)
 		{
 			const std::string url = _endpoint + "/containers/" + id + "/exec";
-			// TODO: create body
-			auto res = _server->post(url, "body");
+			auto res = _server->post(url, config.str());
 			DockerError err = _checkError(res);
 			if (err.isError())
 				return err;
@@ -294,13 +322,12 @@ namespace docker_cpp
 		 * @param [in] tty Allocate a pseudo-TTY
 		 * @returns DockerError
 		 */
-		DockerError startExecInstance(const std::string &id, bool detach = true, bool tty = false)
+		DockerError execStartInstance(const std::string &id, bool detach = false, bool tty = false)
 		{
 			const std::string url = _endpoint + "/exec/" + id + "/start";
 			std::stringstream ss;
 			ss << std::boolalpha << "{\"detach\":\"" << detach << "\",\"tty\":" << tty << "\"}";
-			std::string body = ss.str();
-			return _checkError(_server->post(url, body.c_str()));
+			return _checkError(_server->post(url, ss.str()));
 		}
 
 		/**
@@ -311,7 +338,7 @@ namespace docker_cpp
 		 * @param [in] w Width of the TTY session in characters
 		 * @returns DockerError
 		 */
-		DockerError resizeExecInstance(const std::string &id, int h, int w)
+		DockerError execResizeInstance(const std::string &id, int h, int w)
 		{
 			std::string url = _endpoint + "/exec/" + id + "/resize?";
 			url += query_params(q_arg("h", h), q_arg("w", w));
@@ -324,7 +351,7 @@ namespace docker_cpp
 		 * @param [in,out] result Information about the exec instance
 		 * @returns DockerError
 		 */
-		DockerError inspectInstance(const std::string &id, ExecInfo &result)
+		DockerError execInspectInstance(const std::string &id, ExecInfo &result)
 		{
 			const std::string url = _endpoint + "/exec/" + id + "/json?";
 			auto res = _server->get(url);

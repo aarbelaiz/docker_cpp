@@ -61,7 +61,7 @@ Developed with version [v1.40](https://docs.docker.com/engine/api/v1.40/) of the
 | Ping                         | :heavy_check_mark: |
 | Monitor events               | :x: |
 | Get data usage information   | :x: |
-| __Images__                   | -  |
+| __Images__                   |     |
 | List images                  | :heavy_check_mark: |
 | Build an image               | :clock9: |
 | Delete builder cache         | :x: |
@@ -77,7 +77,7 @@ Developed with version [v1.40](https://docs.docker.com/engine/api/v1.40/) of the
 | Export an image              | :x: |
 | Export several images        | :x: |
 | Import images                | :x: |
-| __Containers__               | :x: |
+| __Containers__               |     |
 | List containers              | :clock9: |
 | Create a container           | :clock9: |
 | Inspect a container          | :x: |
@@ -104,7 +104,11 @@ Developed with version [v1.40](https://docs.docker.com/engine/api/v1.40/) of the
 | Delete stopped containers    | :clock9: |
 | __Networks__       | :x:  |
 | __Volumes__        | :x:  |
-| __Exec__           | :x:  |
+| __Exec__           |      |
+| Create an exec instance      | :clock9: |
+| Start an exec instance       | :clock9: |
+| Resize an exec instance      | :clock9: |
+| Inspect an exec instance     | :clock9: |
 | __Swarm__          | :x:  |
 | __Nodes__          | :x:  |
 | __Services__       | :x:  |

@@ -208,7 +208,7 @@ namespace docker_cpp
 
     //////////// EXEC
 
-    struct DOCKER_CPP_API ProcessConfig {
+    struct DOCKER_CPP_API ProcessConfigInfo {
         bool privileged;
         std::string user;
         bool tty;
@@ -222,7 +222,7 @@ namespace docker_cpp
         std::string id;
         bool running;
         int exitCode;
-        ProcessConfig processConfig;
+        ProcessConfigInfo processConfig;
         bool openStdin;
         bool openStderr;
         bool openStdout;
@@ -242,7 +242,7 @@ namespace docker_cpp
         std::string user; //!< The user, and optionally, group to run the exec process inside the container. Format is one of: user, user:group, uid, or uid:gid.
         std::string workingDirectory; //!< The working directory for the exec process inside the container.
 
-        std::string str() {
+        std::string str() const {
             std::stringstream ss;
             ss << std::boolalpha;
             ss << "{\"AttachStdin\":" << attachStdin << ",";
