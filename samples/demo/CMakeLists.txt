@@ -6,6 +6,7 @@ project(${TARGET})
 
 if(NOT TARGET docker_cpp)
 	find_package( docker_cpp REQUIRED )
+	find_package( ASL REQUIRED )
 endif()
 
 set(SRC
@@ -14,7 +15,7 @@ set(SRC
 
 add_executable(${TARGET} ${SRC}) 
 
-target_link_libraries ( ${TARGET} docker_cpp::docker )
+target_link_libraries ( ${TARGET} docker_cpp::docker asls)
 
 set_target_properties( ${TARGET} PROPERTIES FOLDER samples)
 set_target_properties( ${TARGET} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})

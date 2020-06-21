@@ -14,17 +14,22 @@ set(CMAKE_DEBUG_POSTFIX "d")
 
 add_subdirectory(src)
 
-option(DUMMYLIB_BUILD_SAMPLES "Build samples")
+option(DOCKERCPP_BUILD_SAMPLES "Build samples" ON)
+option(DOCKERCPP_BUILD_TESTS   "Build tests" OFF)
 
-if(DUMMYLIB_BUILD_SAMPLES)
+if(DOCKERCPP_BUILD_SAMPLES)
 	add_subdirectory(samples)
 endif()
 
-export(TARGETS docker NAMESPACE ${LIB_NAME}:: FILE ${LIB_NAME}Config.cmake )
+if(DOCKERCPP_BUILD_TESTS)
+	add_subdirectory(test)
+endif()
 
 if(CMAKE_SOURCE_DIR STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 	export( PACKAGE ${LIB_NAME} )
 endif()
+
+export(TARGETS docker NAMESPACE ${LIB_NAME}:: FILE ${LIB_NAME}Config.cmake )
 
 install(EXPORT ${LIB_NAME} DESTINATION cmake FILE ${LIB_NAME}Config.cmake )
 
