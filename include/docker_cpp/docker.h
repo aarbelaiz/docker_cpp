@@ -16,7 +16,7 @@
 
 namespace docker_cpp
 {
-	inline std::string _map_to_string(const std::map<std::string, std::string> &in)
+	inline std::string _map2json(const std::map<std::string, std::string> &in)
 	{
 		if (in.empty()) return "";
 		const std::string delimiter = ",";
@@ -82,7 +82,7 @@ namespace docker_cpp
 		{
 			std::string url = _endpoint + "/images/json";
 			url += query_params(q_arg("all", all),
-								q_arg("filters", _map_to_string(filters)),
+								q_arg("filters", _map2json(filters)),
 								q_arg("digests", digests));
 			return _checkAndParse(_net.get(url), result);
 		}
@@ -143,7 +143,7 @@ namespace docker_cpp
 		DockerError imagePrune(const std::string &name, PruneInfo &r, const filter_map& filters = filter_map())
 		{
 			std::string url = _endpoint + "/images/prune/json";
-			url += query_params(q_arg("filters", _map_to_string(filters)));
+			url += query_params(q_arg("filters", _map2json(filters)));
 			return _checkAndParse( _net.post(url, ""), r);
 		}
 
@@ -162,14 +162,13 @@ namespace docker_cpp
 		{
 			std::string url = _endpoint + "/containers/json";
 			url += query_params(q_arg("all", all), q_arg("limit", limit), q_arg("size", size),
-								q_arg("filters", _map_to_string(filters)));
+								q_arg("filters", _map2json(filters)));
 			auto res = _net.get(url);
 			DockerError err = _checkError(res);
 			if (!err.isOk())
 				return err;
-			asl::String filteredResponse = res.text().replace("\\\"", ""); // AAA: scaping is necessary for commands
-			asl::Var data = asl::Json::decode(filteredResponse);
-			parse(&data, result);
+			auto data = asl::Json::decode(res.text().replace("\\\"", "")); // AAA: scaping is necessary for commands
+			parse(data, result);
 			return err;
 		}
 		//DockerError createContainer(const std::string &name);

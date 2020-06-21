@@ -31,7 +31,7 @@ int main()
 
 	// List images
 	ImageList res;
-	err = docker.imageList(res);
+	err = docker.imageList(res, false);
 	if (err.isOk()) {
 		std::cout << "--- IMAGES ----" << '\n';
 		std::cout << std::left << std::setw(75) << "IMAGE ID" << std::left << std::setw(35) << "REPO" 
@@ -49,19 +49,20 @@ int main()
 
 	// List containers
 	ContainerList containers;
-	err = docker.containerList(containers, true);
-	if (err.isError()) {
+	err = docker.containerList(containers, true, 5);
+	if (err.isOk()) {
+		std::cout << "--- CONTAINERS ----" << '\n';
+		std::cout << std::left << std::setw(70) << "CONTAINER ID" << std::left << std::setw(40) << "NAME"
+				  << std::left << std::setw(40) << "STATUS" << std::left << std::setw(40) << "IMAGE" << '\n';
+		for(auto &c : containers) {
+			std::cout << std::left << std::setw(70) << c.id << std::left << std::setw(40) << c.names[0]
+					  << std::left << std::setw(40) << c.status << std::left << std::setw(40) << c.image << '\n';
+		}
+		std::cout << "--------------------" << '\n';	
+	}else{
 		std::cout << err << '\n';
 		return EXIT_FAILURE;
 	}
-	std::cout << "--- CONTAINERS ----" << '\n';
-	std::cout << std::left << std::setw(70) << "CONTAINER ID" << std::left << std::setw(40) << "NAME"
-			  << std::left << std::setw(40) << "STATUS" << std::left << std::setw(40) << "IMAGE" << '\n';
-	for(auto &c : containers) {
-		std::cout << std::left << std::setw(70) << c.id << std::left << std::setw(40) << c.names[0]
-				  << std::left << std::setw(40) << c.status << std::left << std::setw(40) << c.image << '\n';
-	}
-	std::cout << "--------------------" << '\n';
 
 	return EXIT_SUCCESS;
 }
