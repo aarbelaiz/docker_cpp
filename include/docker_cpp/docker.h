@@ -100,11 +100,12 @@ namespace docker_cpp
 		 */
 		DockerError imageCreate(const std::string &fromImage, const std::string &fromSrc, const std::string &repo, const std::string &tag, const std::string &message, const std::string &platform = "")
 		{
-			std::string url = _endpoint + "/images/create/json";
+			std::string url = _endpoint + "/images/create";
 			url += query_params(q_arg("fromImage", fromImage), q_arg("fromSrc", fromSrc),
 								q_arg("repo", repo), q_arg("tag", tag), q_arg("message", message),
 								q_arg("platform", platform));
-			return _checkError(_net.post(url));
+			if (fromSrc == "-") { std::cout << "WARN: 'fromSrc' is not supported yet\n"; };
+			return _checkError(_net.post(url, ""));
 		}
 
 		/**
@@ -116,7 +117,7 @@ namespace docker_cpp
 		 */
 		DockerError imageTag(const std::string &name, const std::string &repo, const std::string &tag)
 		{
-			std::string url = _endpoint + "/images/" + name + "/tag/json";
+			std::string url = _endpoint + "/images/" + name + "/tag";
 			url += query_params(q_arg("repo", repo), q_arg("tag", tag));
 			return _checkError(_net.post(url, ""));
 		}
@@ -130,7 +131,7 @@ namespace docker_cpp
 		 */
 		DockerError imageRemove(const std::string &name, DeletedImageList &r, bool force = false, bool noprune = false)
 		{
-			std::string url = _endpoint + "/images/" + name + "/json";
+			std::string url = _endpoint + "/images/" + name;
 			url += query_params(q_arg("force", force), q_arg("noprune", noprune));
 			return _checkAndParse( _net.delet(url), r);
 		}
@@ -142,7 +143,7 @@ namespace docker_cpp
 		 */
 		DockerError imagePrune(const std::string &name, PruneInfo &r, const filter_map& filters = filter_map())
 		{
-			std::string url = _endpoint + "/images/prune/json";
+			std::string url = _endpoint + "/images/prune";
 			url += query_params(q_arg("filters", _map2json(filters)));
 			return _checkAndParse( _net.post(url, ""), r);
 		}
@@ -181,7 +182,7 @@ namespace docker_cpp
 		 */
 		DockerError containerStart(const std::string &id, const std::string &detachKeys = "ctrl-c")
 		{
-			std::string url = _endpoint + "/containers/" + id + "/start/json";
+			std::string url = _endpoint + "/containers/" + id + "/start";
 			url += query_params(q_arg("detachKeys", detachKeys));
 			return _checkError(_net.post(url, ""));
 		}
@@ -194,7 +195,7 @@ namespace docker_cpp
 		 */
 		DockerError containerStop(const std::string &id, int t = -1)
 		{
-			std::string url = _endpoint + "/containers/" + id + "/stop/json";
+			std::string url = _endpoint + "/containers/" + id + "/stop";
 			url += query_params(q_arg("t", t));
 			return _checkError(_net.post(url, ""));
 		}
@@ -286,7 +287,7 @@ namespace docker_cpp
 		 */
 		DockerError container_remove(const std::string &id, bool v = false, bool force = false, bool link = false)
 		{
-			std::string url = _endpoint + "/containers/" + id + "/json";
+			std::string url = _endpoint + "/containers/" + id;
 			url += query_params(q_arg("v", v), q_arg("force", force), q_arg("link", link));
 			return _checkError(_net.delet(url));
 		}
