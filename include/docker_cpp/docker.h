@@ -285,7 +285,7 @@ namespace docker_cpp
 		 * @param [in] link If the container is running, kill it before removing it (default: false)
 		 * @returns DockerError
 		 */
-		DockerError container_remove(const std::string &id, bool v = false, bool force = false, bool link = false)
+		DockerError containerRemove(const std::string &id, bool v = false, bool force = false, bool link = false)
 		{
 			std::string url = _endpoint + "/containers/" + id;
 			url += query_params(q_arg("v", v), q_arg("force", force), q_arg("link", link));

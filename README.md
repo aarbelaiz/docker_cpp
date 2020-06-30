@@ -67,7 +67,7 @@ Developed with version [v1.40](https://docs.docker.com/engine/api/v1.40/) of the
 | List images                  | :heavy_check_mark: |
 | Build an image               | :clock9: |
 | Delete builder cache         | :x: |
-| Create an image              | :clock9: |
+| Create an image              | :heavy_check_mark: |
 | Inspect an image             | :x: |
 | Get history of an image      | :x: |
 | Push an image                | :x: |
@@ -89,17 +89,17 @@ Developed with version [v1.40](https://docs.docker.com/engine/api/v1.40/) of the
 | Export a container           | :x: |
 | Get container stats          | :x: |
 | Resize a container TTY       | :x: |
-| Start a container            | :clock9: |
-| Restart a container          | :clock9: |
-| Kill a container             | :clock9: |
+| Start a container            | :heavy_check_mark: |
+| Restart a container          | :heavy_check_mark: |
+| Kill a container             | :heavy_check_mark: |
 | Update a container           | :x: |
-| Rename a container           | :clock9: |
+| Rename a container           | :heavy_check_mark: |
 | Pause a container            | :clock9: |
 | Unpause a container          | :clock9: |
 | Attatch to a container       | :x: |
 | Attatch to a container webs. | :x: |
 | Wait for a container         | :x: |
-| Remove a container           | :clock9: |
+| Remove a container           | :heavy_check_mark: |
 | Get information about files in container | :x: |
 | Get an archive of a filesystem resource in a container | :x: |
 | Extract an archive of files or folders to a directory in a container | :x: |

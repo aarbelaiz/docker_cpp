@@ -51,8 +51,8 @@ namespace docker_cpp
 
     struct DOCKER_CPP_API Port {
         std::string ip; //!< Host IP address that the container's port is mapped to
-        std::string privatePort; //!< Port on the container
-        std::string publicPort; //!< Port exposed on the host
+        unsigned int privatePort; //!< Port on the container
+        unsigned int publicPort; //!< Port exposed on the host
         std::string type; //!< Valid values: "tcp", "udp" or "sctp" 
     };
 
