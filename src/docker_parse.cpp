@@ -69,10 +69,10 @@ namespace docker_cpp
 			info.image = *container["Image"].toString();
 			info.imageID = *container["ImageID"].toString();
 			info.command = *container["Command"].toString();
-			info.created = static_cast<asl::Long>(container["created"]);
+			info.created = static_cast<asl::Long>(container["Created"]);
 			if (container.has("Ports"))
 			{
-				foreach (auto portInfo, container["Ports"])
+				foreach (auto& portInfo, container["Ports"])
 				{
 					Port port;
 					parse(portInfo, port);
@@ -101,7 +101,7 @@ namespace docker_cpp
 			if (container.has("NetworkSettings"))
 			{
 				NetworkSettings networkSettings;
-				parse(&container["NetworkSettings"], networkSettings);
+				parse(container["NetworkSettings"], networkSettings);
 				info.networkSettings = networkSettings;
 			}
 			out.push_back(info);
@@ -111,8 +111,8 @@ namespace docker_cpp
 	void parse(const asl::Var &in, Port &out)
 	{
 		out.ip = *(in["Ip"].toString());
-		out.privatePort = *(in["PrivatePort"].toString());
-		out.publicPort = *(in["PublicPort"].toString());
+		out.privatePort = in["PrivatePort"];
+		out.publicPort = in["PublicPort"];
 		out.type = *(in["Type"].toString());
 	}
 

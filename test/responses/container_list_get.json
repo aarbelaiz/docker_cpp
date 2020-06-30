@@ -18,9 +18,7 @@
             }
         ],
         "Labels": {
-            "com.example.vendor": "Acme",
-            "com.example.license": "GPL",
-            "com.example.version": "1.0"
+            "com.example.vendor": "Acme"
         },
         "SizeRw": 12288,
         "SizeRootFs": 0,
