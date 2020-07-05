@@ -33,6 +33,34 @@ namespace docker_cpp
 
     using ImageList = std::vector<ImageInfo>;
 
+
+    struct DOCKER_CPP_API ImageBuildParameters {
+        std::string dockerfile = "Dockerfile"; //!< Path within the build context to the Dockerfile. This is ignored if remote is specified and points to an external Dockerfile.
+        std::string t; //!< A name and optional tag to apply to the image in the name:tag format. If you omit the tag the default latest value is assumed. You can provide several t parameters.
+        std::string extrahosts; //!< Extra hosts to add to /etc/hosts
+        std::string remote; //!< A Git repository URI or HTTP/HTTPS context URI. If the URI points to a single text file, the file’s contents are placed into a file called Dockerfile and the image is built from that file. If the URI points to a tarball, the file is downloaded by the daemon and the contents therein used as the context for the build. If the URI points to a tarball and the dockerfile parameter is also specified, there must be a file with the corresponding path inside the tarball.
+        bool q = false; //!< Suppress verbose build output.
+        bool nocache = false; //!< Do not use the cache when building the image.
+        std::string cachefrom; //!< JSON array of images used for build cache resolution.
+        std::string pull; //!< Attempt to pull the image even if an older image exists locally.
+        bool rm = true; //!< Remove intermediate containers after a successful build.
+        bool forcerm = false; //!< Always remove intermediate containers, even upon failure.
+        int memory = -1; //!< Set memory limit for build.
+        int memswap = -1; //!< Total memory (memory + swap). Set as -1 to disable swap.
+        int cpushares = -1; //!< CPU shares (relative weight).
+        std::string cpusetcpus; //!< CPUs in which to allow execution (e.g., 0-3, 0,1).
+        int cpuperiod = -1; //!< The length of a CPU period in microseconds.
+        int cpuquota = -1; //!< Microseconds of CPU time that the container can get in a CPU period.
+        std::string buildargs; //!< JSON map of string pairs for build-time variables. 
+        int shmsize = -1; //!< Size of /dev/shm in bytes. The size must be greater than 0. If omitted the system uses 64MB.
+        bool squash = false; //!< Squash the resulting images layers into a single layer (experimental release only)
+        std::string labels; //!< Arbitrary key/value labels to set on the image, as a JSON map of string pairs.
+        std::string networkmode; //!< Sets the networking mode for the run commands during build. Supported standard values are: bridge, host, none, and container:<name|id>. 
+        std::string platform; //!< Platform in the format os[/arch[/variant]]
+        std::string target; //!< Target build stage
+        std::string outputs; //!< BuildKit output configuration
+    };
+
     struct DOCKER_CPP_API DeletedImageInfo
     {
         std::string untagged; //!< The image ID of an image that was untagged

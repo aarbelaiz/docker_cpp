@@ -5,6 +5,7 @@
 #include "docker_error.h"
 #include "docker_http.h"
 #include "docker_parse.h"
+#include "docker_tar.h"
 
 #include <string>
 #include <map>
@@ -72,7 +73,7 @@ namespace docker_cpp
 
 		/**
 		 * Returns a list of images on the server.
-		 * @param [in,out] result A list of information (imageInfo) of each image in the server
+		 * @param [inout] result A list of information (imageInfo) of each image in the server
 		 * @param [in] all Show all images. Only images from a final layer (no children) are shown by default (default: false)
 		 * @param [in] filters A map of key/value filters
 		 * @param [in] digests Show digest information as a RepoDigests field on each image (default: false)
@@ -86,7 +87,52 @@ namespace docker_cpp
 								q_arg("digests", digests));
 			return _checkAndParse(_net.get(url), result);
 		}
-		//DockerError image_build(const std::string &id);
+
+
+		/**
+		 * Build a docker image from a Dockerfile.
+		 * 
+		 * @param [in] path A path to the .
+		 * @param [in] p Build parameters, see ImageBuildParamaeters data struct documentation.
+		 * @returns DockerError
+		 */
+		DockerError imageBuild(const std::string& path, const ImageBuildParameters& p, bool in_memory = false)
+		{
+			asl::Array<byte> d;
+			std::cout << "[docker_cpp] Creating context tarball..." << std::endl;
+			if (in_memory) {
+				size_t used;
+				size_t cSize = (size_t)directorySize(path); // Estimate context size
+				std::cout << "[docker_cpp] Context size in filesystem: " << cSize * (1.f / (1024.f * 1024.f)) << " MiB\n";
+				d.reserve(cSize);
+				createTarInMemory(path, d.ptr(), cSize, used);
+				d.resize((int)used);
+			}else{
+				d = createTarWithTmpFile(path);
+			}
+			std::cout << "[docker_cpp] Context size: " << d.length() * (1.f / (1024.f * 1024.f)) << " MiB\n";
+			DockerError err = this->imageBuild(d, p);
+			return err;
+		}
+
+		/**
+		 * Build a docker image from a Dockerfile.
+		 * 
+		 * @param [in] context A tar archive compressed with one of the following algorithms: identity (no compression), gzip, bzip2, xz.
+		 * @param [in] p Build parameters, see ImageBuildParamaeters data struct documentation.
+		 * @returns DockerError
+		 */
+		DockerError imageBuild(const asl::Array<byte>& context, const ImageBuildParameters& p)
+		{
+			std::string url = _endpoint + "/build";
+			url += query_params(q_arg("dockerfile", p.dockerfile), q_arg("t", p.t), q_arg("extrahosts", p.extrahosts), q_arg("remote", p.remote),
+								q_arg("q", p.q), q_arg("nocache", p.nocache), q_arg("cachefrom", p.cachefrom), q_arg("pull", p.pull),
+								q_arg("rm", p.rm), q_arg("forcerm", p.forcerm), q_arg("memory", p.memory), q_arg("memswap", p.memswap),
+								q_arg("cpushares", p.cpushares), q_arg("cpusetcpus", p.cpusetcpus), q_arg("cpuquota", p.cpuquota), q_arg("buildargs", p.buildargs),
+								q_arg("shmsize", p.shmsize), q_arg("squash", p.squash), q_arg("labels", p.labels), q_arg("networkmode", p.networkmode),
+								q_arg("platform", p.platform), q_arg("target", p.target), q_arg("outputs", p.outputs));
+			return _checkError(_net.post(url, context, {{"Content-type", "application/x-tar"}}));
+		}
 
 		/**
 		 * Create an image by either pulling it from a registry or importing it.

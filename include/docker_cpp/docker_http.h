@@ -96,7 +96,7 @@ namespace docker_cpp
 		
 		template <typename T>
 		asl::HttpResponse postImpl(const std::string &uri, const T &body, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())
-		{ 
+		{
 			return asl::Http::post(asl::String(uri.c_str()), body);
 		};
 

@@ -4,6 +4,7 @@ project(${TARGET})
 
 # External dependencies
 find_package(ASL REQUIRED)
+find_package(LibArchive REQUIRED)
 
 set(SRC
 	docker_error.cpp
@@ -18,6 +19,7 @@ set(HEADERS
 	${INC}/docker_parse.h
 	${INC}/docker_http.h
 	${INC}/docker_error.h
+	${INC}/docker_tar.h
 	${INC}/export.h
 )
 
@@ -27,7 +29,7 @@ set_target_properties(${TARGET} PROPERTIES PUBLIC_HEADER "${HEADERS}")
 target_include_directories(${TARGET} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
 											$<INSTALL_INTERFACE:$<TARGET_FILE_DIR:${TARGET}>/../include>)
 
-target_link_libraries(${TARGET} PUBLIC asls)
+target_link_libraries(${TARGET} PUBLIC asls LibArchive::LibArchive )
 
 #export(TARGETS ${TARGET} FILE ${CMAKE_BINARY_DIR}/${TARGET}Config.cmake )
 
