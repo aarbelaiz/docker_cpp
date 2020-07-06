@@ -51,7 +51,7 @@ Developed with version [v1.40](https://docs.docker.com/engine/api/v1.40/) of the
 
 ### API coverage
 
-(:100:: Tested, :heavy_check_mark:: It may work, :clock9:: planned, :x:: Not supported)
+(:100:: Tested, :heavy_check_mark:: It may work (at least partially), :clock9:: planned, :x:: Not supported)
 
 | API Feature                  | Supported |
 | :--------------------------- | --------: |
@@ -104,9 +104,14 @@ Developed with version [v1.40](https://docs.docker.com/engine/api/v1.40/) of the
 | Get an archive of a filesystem resource in a container | :x: |
 | Extract an archive of files or folders to a directory in a container | :x: |
 | Delete stopped containers    | :clock9: |
-| __Networks__       | :x:  |
-| __Volumes__        | :x:  |
-| __Exec__           |      |
+| __Networks__                 | :x:  |
+| __Volumes__                  | :clock9: |
+| List volumes                 | :clock9: |
+| Create a volume              | :clock9: |
+| Inspect a volume             | :clock9: |
+| Remove a volume              | :clock9: |
+| Delete unused volumes        | :clock9: |
+| __Exec__                     |      |
 | Create an exec instance      | :heavy_check_mark: |
 | Start an exec instance       | :heavy_check_mark: |
 | Resize an exec instance      | :heavy_check_mark: |
