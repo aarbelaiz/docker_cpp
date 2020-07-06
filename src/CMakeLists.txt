@@ -8,6 +8,7 @@ find_package(ASL REQUIRED)
 set(SRC
 	docker_error.cpp
 	docker_parse.cpp
+	docker_utils.cpp
 )
 
 set(INC ../include/docker_cpp)
@@ -18,6 +19,7 @@ set(HEADERS
 	${INC}/docker_parse.h
 	${INC}/docker_http.h
 	${INC}/docker_error.h
+	${INC}/docker_utils.h
 	${INC}/export.h
 )
 

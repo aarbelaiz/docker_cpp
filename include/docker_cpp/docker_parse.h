@@ -18,6 +18,7 @@ namespace docker_cpp
     void parse(const asl::Var &in, VersionInfo &out);
     void parse(const asl::Var &in, WaitInfo &out);
     void parse(const asl::Var &in, ExecInfo &out);
+    void parse(const asl::Var &in, DeletedVolumesInfo &out);
 } // namespace docker_cpp
 
 

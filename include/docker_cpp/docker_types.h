@@ -269,6 +269,15 @@ namespace docker_cpp
         };
     };
 
+    /////////////// VOLUMES
+
+    struct DeletedVolumesInfo
+    {
+        std::vector<std::string> volumesDeleted; //!< Volumes that were deleted
+        int64_t spaceReclaimed; //!< Disk space reclaimed in bytes
+    };
+    
+
     
 } // namespace docker_cpp
 

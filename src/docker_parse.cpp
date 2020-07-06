@@ -200,4 +200,14 @@ namespace docker_cpp
 		}
 	}
 
+	void parse(const asl::Var &in, DeletedVolumesInfo &out)
+	{
+		if (in.has("VolumesDeleted"))
+		{
+			for(auto &v: in["VolumesDeleted"]) {
+				out.volumesDeleted.push_back(*(v.toString()));
+			}
+		}
+		out.spaceReclaimed = static_cast<asl::Long>(in["SpaceReclaimed"]);
+	}
 } // namespace docker_cpp

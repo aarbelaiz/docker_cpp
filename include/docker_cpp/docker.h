@@ -5,10 +5,7 @@
 #include "docker_error.h"
 #include "docker_http.h"
 #include "docker_parse.h"
-
-#include <string>
-#include <map>
-#include <numeric>
+#include "docker_utils.h"
 
 #include <asl/JSON.h>
 
@@ -16,17 +13,6 @@
 
 namespace docker_cpp
 {
-	inline std::string _map2json(const std::map<std::string, std::string> &in)
-	{
-		if (in.empty()) return "";
-		const std::string delimiter = ",";
-		const std::string result = std::accumulate(in.begin(), in.end(), std::string(),
-		[delimiter](const std::string& s, const std::pair<const std::string, std::string>& p) {
-			return s + (s.empty() ? std::string() : delimiter) + '"' + p.first + "\":\"" + p.second + '"';
-		});
-		return '{' + result + '}';
-	}
-
 	template <typename T>
 	class DOCKER_CPP_API Docker
 	{
@@ -361,6 +347,26 @@ namespace docker_cpp
 			auto data = asl::Json::decode(res.text().replace("\\\"", "")); // AAA: scaping is necessary for commands
 			parse(data, result);
 			return err;
+		}
+
+		////////// Volumes
+
+		DockerError volumesList();
+		DockerError volumesCreate();
+		DockerError volumesInspect();
+		DockerError volumesRemove();
+
+		/**
+		 * Delete unused volumes
+		 * @param [in] filters Filters to process on the prune list: label (label=<key>, label=<key>=<value>, label!=<key>, or label!=<key>=<value>) Prune volumes with (or without, in case label!=... is used) the specified labels.
+		 * @param [inout] result DeletedVolumesInfo with information about the deleted volumes
+		 * @returns DockerError
+		 */
+		DockerError volumesDeleteUnused(DeletedVolumesInfo &result, const filter_map &filters = filter_map())
+		{
+			std::string url = _endpoint + "/volumes/prune";
+			url += query_params(q_arg("filters", _map2json(filters)));
+			return _checkAndParse(_net.post(url, ""), result);
 		}
 
 		////////// Helper functions
