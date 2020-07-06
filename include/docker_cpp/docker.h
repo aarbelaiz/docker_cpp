@@ -354,12 +354,24 @@ namespace docker_cpp
 		DockerError volumesList();
 		DockerError volumesCreate();
 		DockerError volumesInspect();
-		DockerError volumesRemove();
+
+		/**
+		 * Remove a volume
+		 * @param [in] id Volume name or ID
+		 * @param [in] force Force the removal of the volume (default: false)
+		 * @return DockerError
+		 */
+		DockerError volumesRemove(const std::string &id, bool force = false)
+		{
+			std::string url = _endpoint + "/volumes/" + id;
+			url += query_params(q_arg("force", force));
+			return _checkError(_net.delet(url));
+		}
 
 		/**
 		 * Delete unused volumes
-		 * @param [in] filters Filters to process on the prune list: label (label=<key>, label=<key>=<value>, label!=<key>, or label!=<key>=<value>) Prune volumes with (or without, in case label!=... is used) the specified labels.
 		 * @param [inout] result DeletedVolumesInfo with information about the deleted volumes
+		 * @param [in] filters Filters to process on the prune list: label (label=<key>, label=<key>=<value>, label!=<key>, or label!=<key>=<value>) Prune volumes with (or without, in case label!=... is used) the specified labels.
 		 * @returns DockerError
 		 */
 		DockerError volumesDeleteUnused(DeletedVolumesInfo &result, const filter_map &filters = filter_map())
