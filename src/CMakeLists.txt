@@ -9,6 +9,7 @@ find_package(LibArchive REQUIRED)
 set(SRC
 	docker_error.cpp
 	docker_parse.cpp
+	docker_tar.cpp
 )
 
 set(INC ../include/docker_cpp)
