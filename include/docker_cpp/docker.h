@@ -9,8 +9,6 @@
 
 #include <asl/JSON.h>
 
-#include <type_traits>
-
 namespace docker_cpp
 {
 	template <typename T>
@@ -342,8 +340,7 @@ namespace docker_cpp
 			const std::string url = _endpoint + "/exec/" + id + "/json";
 			auto res = _net.get(url);
 			DockerError err = _checkError(res);
-			if (err.isError())
-				return err;
+			if (err.isError()) return err;
 			auto data = asl::Json::decode(res.text().replace("\\\"", "")); // AAA: scaping is necessary for commands
 			parse(data, result);
 			return err;
