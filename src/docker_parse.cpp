@@ -5,7 +5,6 @@
 
 namespace docker_cpp
 {
-
 	void parse(const asl::Var &in, ImageList &out)
 	{
 		foreach (asl::Var &image, in)
