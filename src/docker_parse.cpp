@@ -5,6 +5,7 @@
 
 namespace docker_cpp
 {
+
 	void parse(const asl::Var &in, ImageList &out)
 	{
 		foreach (asl::Var &image, in)
@@ -196,6 +197,43 @@ namespace docker_cpp
 			{
 				out.processConfig.arguments.push_back(*arg.toString());
 			}
+		}
+	}
+
+    void parse(const asl::Var &in, VolumeList &out)
+	{
+		for(auto &v : in["Volumes"]) {
+			VolumeInfo i;
+			parse(v, i);
+			out.volumes.push_back(std::move(i));
+		}
+		for(auto &w : in["Warnings"]) {
+			out.warnings.emplace_back(*w.toString());
+		}
+	}
+
+    void parse(const asl::Var &in, VolumeInfo &out)
+	{
+		out.name = *(in["Name"].toString());
+		out.driver = *(in["Driver"].toString());
+		out.mountpoint = *(in["Mountpoint"].toString());
+		if (in.has("CreatedAt")) out.createdAt = *(in["CreatedAt"].toString());
+		if (in.has("Status")) {
+			for (auto &l : in["Status"].object()) {
+				out.status[*l.key] = *l.value.toString();
+			}
+		}
+		for (auto &l : in["Labels"].object()) {
+			out.labels[*l.key] = *l.value.toString();
+		}
+		out.scope = *(in["Scope"].toString());
+		for (auto &l : in["Options"].object()) {
+			out.driverOptions[*l.key] = *l.value.toString();
+		}
+		if (in.has("UsageData")) {
+			out.usageData.reset(new VolumeUsageData);
+			out.usageData->size = in["UsageData"]["Size"];
+			out.usageData->refCount = in["UsageData"]["RefCount"];
 		}
 	}
 

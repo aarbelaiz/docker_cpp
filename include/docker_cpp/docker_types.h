@@ -277,6 +277,35 @@ namespace docker_cpp
         std::string driver = "local"; //!< Name of the volume driver used by the volume.
         std::unordered_map<std::string, std::string> driverOptions; //!< A mapping of driver options and values. These options are passed directly to the driver and are driver specific.
         std::unordered_map<std::string, std::string> labels; //!< User-defined key/value metadata.
+
+        std::string str() const {
+            std::stringstream ss;
+            ss << "{";
+            if (!name.empty()) ss << "\"Name\":" << name << ",";
+            ss << "\"Driver\":" << driver << ",";
+            if (!driverOptions.empty()) {
+                ss << ",\"DriverOptions\":{";
+                auto d_it = driverOptions.begin();
+                while (d_it != driverOptions.end()) {
+                    ss << "\"" << d_it->first << "\":\"" << d_it->second << "\"";
+                    d_it++;
+                    if (d_it != driverOptions.end()) ss << ",";
+                }
+                ss << "}";
+            }
+            if (!labels.empty()) {
+                ss << ",\"Labels\":{";
+                auto l_it = labels.begin();
+                while (l_it != labels.end()) {
+                    ss << "\"" << l_it->first << "\":\"" << l_it->second << "\"";
+                    l_it++;
+                    if (l_it != labels.end()) ss << ",";
+                }
+                ss << "}";
+            }
+            ss << "}";
+            return ss.str();
+        }
     };
     
     struct VolumeUsageData {

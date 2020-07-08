@@ -383,7 +383,7 @@ namespace docker_cpp
 		 * @param [inout] info Volume data information
 		 * @returns DockerError
 		 */
-		DockerError volumesInspect(const std::string &id, VolumeInfo &info)
+		DockerError volumesInspect(const std::string &id, VolumeInfo &result)
 		{
 			std::string url = _endpoint + "/volumes/" + id;
 			url += query_params(q_arg("name", id));
