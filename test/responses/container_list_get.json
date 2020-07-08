@@ -26,6 +26,23 @@
             "NetworkMode": "default"
         },
         "NetworkSettings": {
+            "Bridge": "",
+            "SandboxID": "a855f124b3a92d4116317443c0df33207622f7bac8e19ea4e616ebae365d914b",
+            "HairpinMode": false,
+            "LinkLocalIPv6Address": "",
+            "LinkLocalIPv6PrefixLen": 0,
+            "Ports": {},
+            "SandboxKey": "/var/run/docker/netns/a855f124b3a9",
+            "SecondaryIPAddresses": null,
+            "SecondaryIPv6Addresses": null,
+            "EndpointID": "0c54a155fd43b08d24931dc4a62316a61688cad339ff940ef747e649829293d2",
+            "Gateway": "172.17.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "IPAddress": "172.17.0.2",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "MacAddress": "02:42:ac:11:00:02",
             "Networks": {
                 "bridge": {
                     "NetworkID": "7ea29fc1412292a2d7bba362f9253545fecdfa8ce9a6e37dd10ba8bee7129812",

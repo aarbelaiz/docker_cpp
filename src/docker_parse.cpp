@@ -2,7 +2,9 @@
 
 #include <asl/String.h>
 #include <asl/Var.h>
+#include <iostream>
 
+#include <utility>
 namespace docker_cpp
 {
 
@@ -40,7 +42,7 @@ namespace docker_cpp
 
 	void parse(const asl::Var &in, DeletedImageList &out)
 	{
-		foreach( asl::Var &i, in) {
+		foreach(asl::Var &i, in) {
 			DeletedImageInfo d_info;
 			if (i.has("Untagged")) d_info.untagged = *(i["Untagged"].toString());
 			if (i.has("Deleted")) d_info.deleted = *(i["Deleted"].toString());
@@ -119,24 +121,28 @@ namespace docker_cpp
 	void parse(const asl::Var &in, NetworkSettings &out)
 	{
 		if (in.has("Networks"))
-		{
-			foreach (auto network, in["Networks"])
+		{		 
+			for(auto& n : in["Networks"].object()) 
 			{
 				EndpointSettings endpoint;
-				foreach (auto link, network["Links"])
+				foreach (auto link, n.value["Links"])
 				{
 					endpoint.links.push_back(*link.toString());
 				}
-				foreach (auto alias, network["Aliases"])
+				foreach (auto alias, n.value["Aliases"])
 				{
 					endpoint.links.push_back(*alias.toString());
 				}
-				endpoint.networkID = *network["NetworkID"].toString();
-				endpoint.endpointID = *network["EndpointID"].toString();
-				endpoint.gateway = *network["Gateway"];
-				endpoint.ipAddress = *network["IpAddress"].toString();
-				endpoint.ipPrefixLen = network["IpPrefixLen"];
-				out.networks.push_back(std::make_pair(*network.toString(), std::ref(endpoint)));
+				endpoint.networkID = *n.value["NetworkID"].toString();
+				endpoint.endpointID = *n.value["EndpointID"].toString();
+				endpoint.gateway = *n.value["Gateway"].toString();
+				endpoint.ipAddress = *n.value["IPAddress"].toString();
+				endpoint.ipPrefixLen = n.value["IPPrefixLen"];
+				endpoint.ipV6Gateway = *n.value["IPv6Gateway"].toString();
+				endpoint.globalIpV6Address = *n.value["GlobalIPv6Address"].toString();
+				endpoint.globalIpV6PrefixLen = (int)n.value["GlobalIPv6PrefixLen"];
+				endpoint.macAddress = *n.value["MacAddress"].toString();
+				out.networks.emplace_back(*n.key, std::move(endpoint));
 			}
 		}
 	}

@@ -65,7 +65,7 @@ namespace docker_cpp
     };
 
     struct DOCKER_CPP_API EndpointSettings {
-        std::unique_ptr<IPAMConfig> ipamConfig;
+        std::shared_ptr<IPAMConfig> ipamConfig;
         std::vector<std::string> links;
         std::vector<std::string> aliases;
         std::string networkID; //!< Unique ID of the network.
@@ -82,7 +82,7 @@ namespace docker_cpp
 
     //Configuration for a network endpoint.
     struct DOCKER_CPP_API NetworkSettings {
-        std::vector<std::pair<std::string, std::reference_wrapper<EndpointSettings> >> networks;
+        std::vector<std::pair<std::string, EndpointSettings> > networks;
     };
 
     struct DOCKER_CPP_API Mount

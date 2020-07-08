@@ -24,23 +24,24 @@ TEST_SUITE("CONTAINER") {
         CHECK(r[0].ports[0].publicPort == 3333);
         CHECK(r[0].ports[0].type == "tcp");
         CHECK(r[0].labels.empty() == false);
+        CHECK(r[0].labels.size() == 1);
         CHECK(r[0].labels[0].first == "com.example.vendor");
         CHECK(r[0].labels[0].second == "Acme");
         CHECK(r[0].sizeRw == 12288);
         CHECK(r[0].sizeRootFs == 0);
         CHECK(r[0].hostConfig.first == "NetworkMode");
         CHECK(r[0].hostConfig.second == "default");
-        CHECK(r[0].networkSettings.networks[0].first == "default");
-        //CHECK(r[0].networkSettings.networks[0].second.get().gateway == "172.17.0.1");
-        //CHECK(r[0].networkSettings.networks[0].second.get().networkID == "7ea29fc1412292a2d7bba362f9253545fecdfa8ce9a6e37dd10ba8bee7129812");
-        //CHECK(r[0].networkSettings.networks[0].second.get().endpointID == "2cdc4edb1ded3631c81f57966563e5c8525b81121bb3706a9a9a3ae102711f3f");
-        //CHECK(r[0].networkSettings.networks[0].second.get().ipAddress == "172.17.0.2");
-        //CHECK(r[0].networkSettings.networks[0].second.get().ipPrefixLen == 16);
-        //CHECK(r[0].networkSettings.networks[0].second.get().ipV6Gateway == "");
-        //CHECK(r[0].networkSettings.networks[0].second.get().globalIpV6Address == "");
-        //CHECK(r[0].networkSettings.networks[0].second.get().globalIpV6PrefixLen == 0);
-        //CHECK(r[0].networkSettings.networks[0].second.get().macAddress == "02:42:ac:11:00:02");
-        //CHECK("r[0].mounts.empty()" == "Mount not supportted");
+        CHECK(r[0].networkSettings.networks[0].first == "bridge");
+        CHECK(r[0].networkSettings.networks[0].second.gateway == "172.17.0.1");
+        CHECK(r[0].networkSettings.networks[0].second.networkID == "7ea29fc1412292a2d7bba362f9253545fecdfa8ce9a6e37dd10ba8bee7129812");
+        CHECK(r[0].networkSettings.networks[0].second.endpointID == "2cdc4edb1ded3631c81f57966563e5c8525b81121bb3706a9a9a3ae102711f3f");
+        CHECK(r[0].networkSettings.networks[0].second.ipAddress == "172.17.0.2");
+        CHECK(r[0].networkSettings.networks[0].second.ipPrefixLen == 16);
+        CHECK(r[0].networkSettings.networks[0].second.ipV6Gateway == "");
+        CHECK(r[0].networkSettings.networks[0].second.globalIpV6Address == "");
+        CHECK(r[0].networkSettings.networks[0].second.globalIpV6PrefixLen == 0);
+        CHECK(r[0].networkSettings.networks[0].second.macAddress == "02:42:ac:11:00:02");
+        CHECK("r[0].mounts.empty() == false" == "TODO");
     }
 
     TEST_CASE("Check containerList handles error") {
@@ -157,8 +158,8 @@ TEST_SUITE("CONTAINER") {
         CHECK(e.isError() == true);
     }
 
-    TEST_CASE("Check containerWait handles error") {
-        Docker<MockErrorHttp> d("204");
+    TEST_CASE("Check containerWait parses OK response") {
+        Docker<MockResponseHttp> d("container_wait");
         WaitInfo r;
         DockerError e = d.containerWait("containerID", r);
         CHECK(e.isOk() == true);
