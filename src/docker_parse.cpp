@@ -174,10 +174,8 @@ namespace docker_cpp
 	void parse(const asl::Var &in, WaitInfo &out)
 	{
 		out.statusCode = in["StatusCode"];
-		if (in.has("Error"))
-		{
+		if (in.has("Error")) 
 			out.errorMsg = *(in["Error"]["Message"].toString());
-		}
 	}
 
 	void parse(const asl::Var &in, ExecInfo &out)
