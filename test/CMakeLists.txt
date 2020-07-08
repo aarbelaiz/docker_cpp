@@ -26,6 +26,7 @@ set(SRC
     test_docker_image.cpp
     test_docker_exec.cpp
     test_docker_container.cpp
+    test_docker_volumes.cpp
 )
 set(HEADERS test_utils.h test_config.h)
 
