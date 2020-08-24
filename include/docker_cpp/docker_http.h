@@ -62,7 +62,7 @@ namespace docker_cpp
 	}
 
 	template <typename Derived>
-	struct DockerHttpInterface
+	struct DOCKER_CPP_API DockerHttpInterface
 	{
 		asl::HttpResponse get(const std::string &uri, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())
 		{
@@ -87,7 +87,7 @@ namespace docker_cpp
 		}
 	};
 
-	struct ASLHttp : DockerHttpInterface<ASLHttp>
+	struct DOCKER_CPP_API ASLHttp : DockerHttpInterface<ASLHttp>
 	{
 		asl::HttpResponse getImpl(const std::string &uri, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())
 		{
