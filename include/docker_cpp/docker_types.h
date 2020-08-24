@@ -8,6 +8,7 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <cstdint>
 
 namespace docker_cpp
 {
@@ -216,6 +217,7 @@ namespace docker_cpp
         std::string name;
         std::string version;
     };
+
     struct DOCKER_CPP_API VersionInfo {
         std::vector<Component> components;
         std::string version;
