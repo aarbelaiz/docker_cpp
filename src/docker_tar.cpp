@@ -32,7 +32,7 @@ namespace docker_cpp {
 		if (file.is_open())
 		{
 			archive_entry_copy_pathname(entry, pathname);
-			archive_read_disk_entry_from_file(ard, entry, NULL, NULL);
+			archive_read_disk_entry_from_file(ard, entry, -1, NULL);
 			int r = archive_write_header(a, entry);
 			if (r < ARCHIVE_OK) { std::cout << archive_error_string(a); }
 			//while ((bytes_read = read(fd, buff, sizeof(buff))) > 0)
@@ -94,7 +94,8 @@ namespace docker_cpp {
             a = archive_write_new();
             r = archive_write_add_filter_gzip(a);
             if (r < ARCHIVE_OK) { std::cout <<  archive_error_string(a); }
-            r = archive_write_set_format_ustar(a);
+            //r = archive_write_set_format_ustar(a);
+			r = archive_write_set_format_pax(a);
             if (r < ARCHIVE_OK) { std::cout <<  archive_error_string(a); }
             r = archive_write_open_memory(a, buffer, size, &used);
             if (r < ARCHIVE_OK) { std::cout <<  archive_error_string(a); }
@@ -121,7 +122,7 @@ namespace docker_cpp {
             a = archive_write_new();
             r = archive_write_add_filter_gzip(a);
             if (r < ARCHIVE_OK) { std::cout <<  archive_error_string(a); }
-            r = archive_write_set_format_ustar(a);
+            r = archive_write_set_format_pax(a);
             if (r < ARCHIVE_OK) { std::cout <<  archive_error_string(a); }
 
             // Create a temporary file 
