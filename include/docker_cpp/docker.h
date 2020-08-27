@@ -486,7 +486,7 @@ namespace docker_cpp
 			{
 				return DockerError::D_OK();
 			}
-			else if (code < 400)
+			else if (code >= 300 && code < 400)
 			{
 				std::string msg = *(res.json()["message"].toString());
 				return DockerError::D_INFO(msg, code);

@@ -9,7 +9,6 @@
 #include <map>
 
 #include <cstring>
-//#include <type_traits>
 
 namespace docker_cpp
 {
@@ -100,10 +99,20 @@ namespace docker_cpp
 			return asl::Http::post(asl::String(uri.c_str()), body);
 		};
 
+		asl::HttpResponse postImpl(const std::string &uri, const std::string &body, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())
+		{
+			return asl::Http::post(asl::String(uri.c_str()), asl::String(body.c_str()));
+		};
+
 		template <typename T>
 		asl::HttpResponse putImpl(const std::string &uri, const T &body, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())
 		{ 
 			return asl::Http::put(asl::String(uri.c_str()), body);
+		};
+
+		asl::HttpResponse putImpl(const std::string &uri, const std::string &body, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())
+		{
+			return asl::Http::put(asl::String(uri.c_str()), asl::String(body.c_str()));
 		};
 
 		asl::HttpResponse deletImpl(const std::string &uri, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())
