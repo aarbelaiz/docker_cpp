@@ -33,8 +33,6 @@ namespace docker_cpp
 			std::ostringstream oss;
 			oss << std::boolalpha << value.first << "=" << value.second;
 			t = std::move(oss.str());
-		}else{
-			t = std::string();
 		}
 		s = s + (s.empty() || t.empty() ? "" : "&" ) + t;
 	}
@@ -101,7 +99,7 @@ namespace docker_cpp
 
 		asl::HttpResponse postImpl(const std::string &uri, const std::string &body, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())
 		{
-			return asl::Http::post(asl::String(uri.c_str()), asl::String(body.c_str()));
+			return asl::Http::post(asl::String(uri.c_str()), asl::String(body.c_str()), {{"Content-Type", "application/json"}});
 		};
 
 		template <typename T>

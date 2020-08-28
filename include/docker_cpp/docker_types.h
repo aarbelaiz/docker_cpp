@@ -279,7 +279,7 @@ namespace docker_cpp
             ss << "{\"AttachStdin\":" << attachStdin << ",";
             ss << "\"AttachStdout\":" << attachStdout << ",";
             ss << "\"AttachStderr\":" << attachStderr << ",";
-            ss << "\"DetachKeys\":" << detachKeys << ",";
+            ss << "\"DetachKeys\":\"" << detachKeys << "\",";
             ss << "\"Tty\":" << tty << ",";
             ss << "\"Env\": [";
             for (auto &envVar : env) {
@@ -294,8 +294,8 @@ namespace docker_cpp
             }
             ss << "],";
             ss << "\"Privileged\":" << privileged << ",";
-            ss << "\"User\":" << user << ",";
-            ss << "\"WorkingDir\":" << workingDirectory << "}";
+            ss << "\"User\":\"" << user << "\",";
+            ss << "\"WorkingDir\":\"" << workingDirectory << "\"}";
             return ss.str();
         };
     };

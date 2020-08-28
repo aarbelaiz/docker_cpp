@@ -356,7 +356,7 @@ namespace docker_cpp
 		{
 			const std::string url = _endpoint + "/exec/" + id + "/start";
 			std::stringstream ss;
-			ss << std::boolalpha << "{\"detach\":\"" << detach << "\",\"tty\":" << tty << "\"}";
+			ss << std::boolalpha << "{\"detach\":" << detach << ",\"tty\":" << tty << "}";
 			return _checkError(_net.post(url, ss.str()));
 		}
 

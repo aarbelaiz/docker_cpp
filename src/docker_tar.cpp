@@ -136,13 +136,15 @@ namespace docker_cpp {
             
             // Close archive
             archive_write_close(a);
-            archive_write_free(a);
+			archive_write_free(a);
+
+			// Read tmp archive into buffer
+			asl::File f(tmpFilePath, asl::File::READ);
+			asl::Array<byte> context = f.content();
+			            
             //close(fd);
             //sync();
-
-            // Read tmp archive into buffer
-            asl::File f(tmpFilePath, asl::File::READ);
-            asl::Array<byte> context = f.content();
+			
             f.close();
             f.remove();
             return context;
