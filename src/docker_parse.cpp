@@ -251,4 +251,17 @@ namespace docker_cpp
 		}
 		out.spaceReclaimed = static_cast<asl::Long>(in["SpaceReclaimed"]);
 	}
+
+	void parse(const asl::Var &in, ContainterCreateResult &out)
+	{
+		if (in.has("Id")) out.id = *(in["Id"].toString());
+		if (in.has("Warnings"))
+		{
+			for (auto &w : in["Warnings"])
+			{
+				out.warnings.push_back(*(w.toString()));
+			}
+			
+		}
+	}
 } // namespace docker_cpp

@@ -159,6 +159,7 @@ namespace docker_cpp
         //TODO: HealthCheck
         bool argsEscaped = true; //!< Command is already escaped (Windows only)
         std::string image = ""; //!< The name of the image to use when creating the container
+        //TODO: Volumes
         std::string workingDir = ""; //!< The working directory for commands to run in.
         std::vector<std::string> entrypoint; //!< The entry point for the container as a string or an array of strings. If the array consists of exactly one empty string ([""]) then the entry point is reset to system default (i.e., the entry point used by docker when there is no ENTRYPOINT instruction in the Dockerfile).
         bool networkDisabled = false; //!< Disable networking for the container.
@@ -171,12 +172,12 @@ namespace docker_cpp
         //TODO: HostConfig
         std::vector<std::pair<std::string, EndpointSettings> > endpointConfig; //!< A mapping of network name to endpoint configuration for that network.
 
-        std::string str() {
+        std::string str() const {
             std::stringstream ss;
             ss << std::boolalpha << "{";
-            ss << "\"Hostname\":" << hostname << ",";
-            ss << "\"DomainName\":" << domainName << ",";
-            ss << "\"User\":" << user << ",";
+            ss << "\"Hostname\":\"" << hostname << "\",";
+            ss << "\"DomainName\":\"" << domainName << "\",";
+            ss << "\"User\":\"" << user << "\",";
             ss << "\"AttachStdin\":" << attachStdin << ",";
             ss << "\"AttachStdout\":" << attachStdout << ",";
             ss << "\"AttachStdErr\":" << attachStdErr << ",";
@@ -202,14 +203,24 @@ namespace docker_cpp
             }
             ss << "],";
             ss << "\"ArgsEscaped\":" << argsEscaped << ",";
-            ss << "\"Image\":" << image << ",";
-            ss << "\"WorkingDir\":" << workingDir << ",";
-            ss << "\"Image\":" << image << ",";
+            ss << "\"Image\":\"" << image << "\",";
+            ss << "\"WorkingDir\":\"" << workingDir << "\"";
             ss << "}";
             return ss.str();
         }
     };
 
+    struct DOCKER_CPP_API ContainerCreateParams {
+        ContainerConfig config;
+        std::string str() const {
+            return config.str();
+        }
+    };
+
+    struct DOCKER_CPP_API ContainterCreateResult {
+        std::string id;
+        std::vector<std::string> warnings;
+    };
     //////////// SYSTEM
 
     struct DOCKER_CPP_API Component {

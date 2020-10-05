@@ -21,6 +21,7 @@ namespace docker_cpp
     void parse(const asl::Var &in, VolumeList &out);
     void parse(const asl::Var &in, VolumeInfo &out);
     void parse(const asl::Var &in, DeletedVolumesInfo &out);
+    void parse(const asl::Var &in, ContainterCreateResult &out);
 } // namespace docker_cpp
 
 

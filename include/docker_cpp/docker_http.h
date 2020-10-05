@@ -97,13 +97,28 @@ namespace docker_cpp
 		template <typename T>
 		asl::HttpResponse postImpl(const std::string &uri, const T &body, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())
 		{
-			return asl::Http::post(asl::String(uri.c_str()), body);
+			asl::Dic<> asl_hs;
+			for (auto &h: headers) { asl_hs = asl_hs(asl::String(h.first.c_str()), asl::String(h.second.c_str())); }
+			std::cout << *body << std::endl;
+			return asl::Http::post(asl::String(uri.c_str()), body, asl_hs);
+		};
+
+		asl::HttpResponse postImpl(const std::string &uri, const std::string &body, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())
+		{
+			return postImpl(uri, asl::String(body.c_str()), headers);
 		};
 
 		template <typename T>
 		asl::HttpResponse putImpl(const std::string &uri, const T &body, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())
-		{ 
+		{
+			asl::Dic<> asl_hs;
+			for (auto &h: headers) { asl_hs = asl_hs(asl::String(h.first.c_str()), asl::String(h.second.c_str())); }
 			return asl::Http::put(asl::String(uri.c_str()), body);
+		};
+
+		asl::HttpResponse putImpl(const std::string &uri, const std::string &body, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())
+		{ 
+			return putImpl(uri, asl::String(body.c_str()), headers);
 		};
 
 		asl::HttpResponse deletImpl(const std::string &uri, const std::map<std::string, std::string> &headers = std::map<std::string, std::string>())

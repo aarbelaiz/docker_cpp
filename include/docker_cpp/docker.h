@@ -202,7 +202,19 @@ namespace docker_cpp
 			parse(data, result);
 			return err;
 		}
-		//DockerError createContainer(const std::string &name);
+		
+		/**
+		 * Create a container.
+		 * @param [in] name Name of the container
+		 * @param [in] p Container creation paramaters
+		 * @returns DockerError
+		 */
+		DockerError containerCreate(const std::string &name, const ContainerCreateParams &p, ContainterCreateResult &r)
+		{
+			std::string url = _endpoint + "/containers/create";
+			url += query_params(q_arg("name", name));
+			return _checkAndParse(_net.post(url, p.str(), {{"Content-Type", "application/json"}}), r);
+		}
 
 		/**
 		 * Start a container.

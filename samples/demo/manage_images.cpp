@@ -57,7 +57,7 @@ int main()
     std::string imageId;
     for (ImageInfo &img : images)
     {
-        bool containsTag = std::find(img.repoTags.begin(), img.repoTags.end(), "python:3-alpine") != img.repoTags.end();
+        bool containsTag = std::find(img.repoTags.begin(), img.repoTags.end(), "foo:bar") != img.repoTags.end();
         if (containsTag)
         {
             imageId = img.id;
@@ -66,13 +66,34 @@ int main()
     }
 
     // Lets tag the image
-    err = docker.imageTag(imageId, "repo_foo", "tag_bar");
+    err = docker.imageTag(imageId, "foo", "tag_bar");
     if (err.isError())
     {
         std::cout << "Error setting tag to image\n"
                   << err << '\n';
         return EXIT_FAILURE;
     }
+
+    // Create a new container
+    ContainterCreateResult createResult;
+	ContainerCreateParams params;
+	params.config.hostname = "localhost";
+	params.config.image = imageId;
+	params.config.user = "";
+    //params.config.cmd = { "python3 -c \\\"print('Hello world!')\\\"" };
+    params.config.cmd = { "python3 --version" };
+    params.config.argsEscaped = true;
+	//params.config.entrypoint = "/tmp";
+	err = docker.containerCreate("dummy_container", params, createResult);
+	if (err.isError()) {
+		std::cout << err << '\n';
+		return EXIT_FAILURE;
+	}else{
+        std::cout << createResult.id << std::endl;
+    }
+
+    err = docker.containerStart(createResult.id);
+    if (err.isError()) std::cout << err << '\n';
 
     // Lets remove the image
     DeletedImageList deletedImages;
