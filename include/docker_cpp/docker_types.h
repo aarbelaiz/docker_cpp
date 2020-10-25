@@ -142,6 +142,49 @@ namespace docker_cpp
 
     using ContainerList = std::vector<ContainerInfo>;
 
+    struct DOCKER_CPP_API HealthConfig {
+        /*! The test to perform.
+        Possible values are:
+            [] inherit healthcheck from image or parent image
+            ["NONE"] disable healthcheck
+            ["CMD", args...] exec arguments directly
+            ["CMD-SHELL", command] run command with system's default shell
+        */
+        std::vector<std::string> test;
+        /*! The time to wait between checks in nanoseconds.
+        It should be 0 or at least 1000000 (1 ms). 0 means inherit.
+        */
+        int interval = 0;
+        /*! The time to wait before considering the check to have hung.
+        It should be 0 or at least 1000000 (1 ms). 0 means inherit.
+        */
+        int timeout = 0;
+        /*! The number of consecutive failures needed to consider a container as unhealthy.
+        0 means inherit.
+        */
+        int retries = 0;
+        /*! Start period for the container to initialize before starting health-retries countdown in nanoseconds.
+        It should be 0 or at least 1000000 (1 ms). 0 means inherit.
+        */
+        int startPeriod = 0;
+
+        std::string str() const {
+            std::stringstream ss;
+            ss << std::boolalpha << "{";
+            ss << "\"Test\":[";
+            for(auto &t: test){
+                ss << "\"" << t << "\"";
+                if (&t != &test.back()) ss << ",";
+            }
+            ss << "],";
+            ss << "\"Interval\":" << interval << ",";
+            ss << "\"Timeout\":" << timeout << ",";
+            ss << "\"Retries\":" << retries << ",";
+            ss << "\"StartPeriod\":" << startPeriod << "}";
+            return ss.str();
+        }
+    };
+
     struct DOCKER_CPP_API ContainerConfig
     {
         std::string hostname = ""; //!< The hostname to use for the container, as a valid RFC 1123 hostname.
@@ -156,10 +199,10 @@ namespace docker_cpp
         bool stdinOnce = false; //!< Close stdin after one attached client disconnects
         std::vector<std::string> env; //!< A list of environment variables to set inside the container in the form ["VAR=value", ...]. A variable without = is removed from the environment, rather than to have an empty value.
         std::vector<std::string> cmd; //!< Command to run specified as an array of strings.
-        //TODO: HealthCheck
+        HealthConfig healthCheck; //!< A test to perform to check that the container is healthy.
         bool argsEscaped = true; //!< Command is already escaped (Windows only)
         std::string image = ""; //!< The name of the image to use when creating the container
-        //TODO: Volumes
+        std::vector<std::string> volumes; //!< An object mapping mount point paths inside the container to empty objects.
         std::string workingDir = ""; //!< The working directory for commands to run in.
         std::vector<std::string> entrypoint; //!< The entry point for the container as a string or an array of strings. If the array consists of exactly one empty string ([""]) then the entry point is reset to system default (i.e., the entry point used by docker when there is no ENTRYPOINT instruction in the Dockerfile).
         bool networkDisabled = false; //!< Disable networking for the container.
@@ -182,7 +225,7 @@ namespace docker_cpp
             ss << "\"AttachStdout\":" << attachStdout << ",";
             ss << "\"AttachStdErr\":" << attachStdErr << ",";
             ss << "\"ExposedPorts\":{";
-            for(auto &p: exposedPorts){
+            for(auto &p: exposedPorts) {
                 ss << "\"" << p << "\": {}";
                 if (&p != &exposedPorts.back()) ss << ",";
             }
@@ -191,20 +234,61 @@ namespace docker_cpp
             ss << "\"OpenStdin\":" << openStdin << ",";
             ss << "\"StdinOnce\":" << stdinOnce << ",";
             ss << "\"Env\":[";
-            for(auto &e: env){
+            for(auto &e: env) {
                 ss << "\"" << e << "\"";
                 if (&e != &env.back()) ss << ",";
             }
             ss << "],";
             ss << "\"Cmd\":[";
-            for(auto &c: cmd){
+            for(auto &c: cmd) {
                 ss << "\"" << c << "\"";
                 if (&c != &cmd.back()) ss << ",";
             }
             ss << "],";
+            ss << "\"HealthCheck\":" << healthCheck.str() << ",";
             ss << "\"ArgsEscaped\":" << argsEscaped << ",";
             ss << "\"Image\":\"" << image << "\",";
-            ss << "\"WorkingDir\":\"" << workingDir << "\"";
+            ss << "\"Volumes\":{";
+            for(auto &v: volumes) {
+                ss << "\"" << v << "\": {}";
+                if (&v != &volumes.back()) ss << ",";
+            }
+            ss << "},";
+            ss << "\"WorkingDir\":\"" << workingDir << "\",";
+            ss << "\"Entrypoint\":[";
+            for(auto &e: entrypoint) {
+                ss << "\"" << e << "\"";
+                if (&e != &entrypoint.back()) ss << ",";
+            }
+            ss << "],";
+            ss << "\"NetworkDisabled\":" << networkDisabled << ",";
+            ss << "\"MacAddress\":\"" << macAddress << "\",";
+            ss << "\"OnBuild\":[";
+            for(auto &e: onBuild) {
+                ss << "\"" << e << "\"";
+                if (&e != &onBuild.back()) ss << ",";
+            }
+            ss << "],";
+            if (!labels.empty()) {
+                ss << ",\"Labels\":{";
+                auto l_it = labels.begin();
+                while (l_it != labels.end()) {
+                    ss << "\"" << l_it->first << "\":\"" << l_it->second << "\"";
+                    l_it++;
+                    if (l_it != labels.end()) ss << ",";
+                }
+                ss << "},";
+            }
+            ss << "\"StopSignal\":\"" << stopSignal << "\",";
+            ss << "\"StopTimeout\":" << stopTimeout << ",";
+            ss << "\"Shell\":[";
+            for(auto &e: shell) {
+                ss << "\"" << e << "\"";
+                if (&e != &shell.back()) ss << ",";
+            }
+            ss << "]";
+            //TBD : HostConfig
+            //TBD : EndpointSettings
             ss << "}";
             return ss.str();
         }
