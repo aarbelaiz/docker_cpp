@@ -8,6 +8,7 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <cstdint>
 
 namespace docker_cpp
 {
@@ -216,6 +217,7 @@ namespace docker_cpp
         std::string name;
         std::string version;
     };
+
     struct DOCKER_CPP_API VersionInfo {
         std::vector<Component> components;
         std::string version;
@@ -277,7 +279,7 @@ namespace docker_cpp
             ss << "{\"AttachStdin\":" << attachStdin << ",";
             ss << "\"AttachStdout\":" << attachStdout << ",";
             ss << "\"AttachStderr\":" << attachStderr << ",";
-            ss << "\"DetachKeys\":" << detachKeys << ",";
+            ss << "\"DetachKeys\":\"" << detachKeys << "\",";
             ss << "\"Tty\":" << tty << ",";
             ss << "\"Env\": [";
             for (auto &envVar : env) {
@@ -292,15 +294,15 @@ namespace docker_cpp
             }
             ss << "],";
             ss << "\"Privileged\":" << privileged << ",";
-            ss << "\"User\":" << user << ",";
-            ss << "\"WorkingDir\":" << workingDirectory << "}";
+            ss << "\"User\":\"" << user << "\",";
+            ss << "\"WorkingDir\":\"" << workingDirectory << "\"}";
             return ss.str();
         };
     };
 
     /////////////// VOLUMES
 
-    struct VolumeBase {
+    struct DOCKER_CPP_API VolumeBase {
         std::string name; //!< Name of the volume.
         std::string driver = "local"; //!< Name of the volume driver used by the volume.
         std::unordered_map<std::string, std::string> driverOptions; //!< A mapping of driver options and values. These options are passed directly to the driver and are driver specific.
@@ -336,26 +338,26 @@ namespace docker_cpp
         }
     };
     
-    struct VolumeUsageData {
+    struct DOCKER_CPP_API VolumeUsageData {
         int size = -1; //!< Amount of disk space used by the volume (in bytes). This information is only available for volumes created with the "local" volume driver. For volumes created with other volume drivers, this field is set to -1 ("not available")
         int refCount = -1; //!< The number of containers referencing this volume. This field is set to -1 if the reference-count is not available.
     };
 
-    struct VolumeInfo : VolumeBase
+    struct DOCKER_CPP_API VolumeInfo : VolumeBase
     {
         std::string mountpoint; //!< Mount path of the volume on the host.
         std::string createdAt; //!< TODO: datetime -> Date/Time the volume was created.
         std::unordered_map<std::string, std::string> status; //!< Low-level details about the volume, provided by the volume driver. Details are returned as a map with key/value pairs: {"key":"value","key2":"value2"}. The Status field is optional, and is omitted if the volume driver does not support this feature.
         std::string scope = "local"; //!< ["local" | "global"] The level at which the volume exists. Either global for cluster-wide, or local for machine level. (default: "local")
-        std::unique_ptr<VolumeUsageData> usageData = nullptr; //!< Usage details about the volume. It can be null.
+        std::shared_ptr<VolumeUsageData> usageData = nullptr; //!< Usage details about the volume. It can be null.
     };
 
-    struct VolumeList {
+    struct DOCKER_CPP_API VolumeList {
         std::vector<VolumeInfo> volumes; //!< List of volumes
         std::vector<std::string> warnings; //!< Warnings that occurred when fetching the list of volumes
     };
     
-    struct DeletedVolumesInfo
+    struct DOCKER_CPP_API DeletedVolumesInfo
     {
         std::vector<std::string> volumesDeleted; //!< Volumes that were deleted
         int64_t spaceReclaimed; //!< Disk space reclaimed in bytes

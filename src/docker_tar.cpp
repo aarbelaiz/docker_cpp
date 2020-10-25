@@ -9,12 +9,15 @@
 
 #include <iostream>
 #include <vector>
+#include <fstream>
 
 namespace docker_cpp {
 
     void fileToArchive(struct archive *a, const char *name, const char* pathname)
     {
-        char buff[8192]; //8 MB blocks
+        //char buff[8192]; //8 MB blocks
+		std::streampos size;
+		char *buff;
         size_t bytes_read;
         struct archive *ard;
         struct archive_entry *entry;
@@ -23,16 +26,27 @@ namespace docker_cpp {
         ard = archive_read_disk_new();
         archive_read_disk_set_standard_lookup(ard);
         entry = archive_entry_new();
-        fd = open(name, O_RDONLY);
-        if (fd < 0) return;
-        archive_entry_copy_pathname(entry, pathname);
-        archive_read_disk_entry_from_file(ard, entry, fd, NULL);
-        int r = archive_write_header(a, entry);
-        if (r < ARCHIVE_OK) { std::cout <<  archive_error_string(a); }
-        while ((bytes_read = read(fd, buff, sizeof(buff))) > 0)
-            archive_write_data(a, buff, bytes_read);
-        archive_write_finish_entry(a);
-        close(fd);
+        //fd = open(name, O_RDONLY);
+        //if (fd < 0) return;
+		std::ifstream file(name, std::ios::in | std::ios::binary | std::ios::ate);
+		if (file.is_open())
+		{
+			archive_entry_copy_pathname(entry, pathname);
+			archive_read_disk_entry_from_file(ard, entry, -1, NULL);
+			int r = archive_write_header(a, entry);
+			if (r < ARCHIVE_OK) { std::cout << archive_error_string(a); }
+			//while ((bytes_read = read(fd, buff, sizeof(buff))) > 0)
+			//	archive_write_data(a, buff, bytes_read);
+			size = file.tellg();
+			buff = new char[size];
+			file.seekg(0, std::ios::beg);
+			file.read(buff, size);
+			archive_write_data(a, buff, size);
+			archive_write_finish_entry(a);
+			delete[] buff;
+		}
+		file.close();
+        //close(fd);
         archive_read_free(ard);
         archive_entry_free(entry);
     }
@@ -80,7 +94,8 @@ namespace docker_cpp {
             a = archive_write_new();
             r = archive_write_add_filter_gzip(a);
             if (r < ARCHIVE_OK) { std::cout <<  archive_error_string(a); }
-            r = archive_write_set_format_ustar(a);
+            //r = archive_write_set_format_ustar(a);
+			r = archive_write_set_format_pax(a);
             if (r < ARCHIVE_OK) { std::cout <<  archive_error_string(a); }
             r = archive_write_open_memory(a, buffer, size, &used);
             if (r < ARCHIVE_OK) { std::cout <<  archive_error_string(a); }
@@ -107,26 +122,29 @@ namespace docker_cpp {
             a = archive_write_new();
             r = archive_write_add_filter_gzip(a);
             if (r < ARCHIVE_OK) { std::cout <<  archive_error_string(a); }
-            r = archive_write_set_format_ustar(a);
+            r = archive_write_set_format_pax(a);
             if (r < ARCHIVE_OK) { std::cout <<  archive_error_string(a); }
 
             // Create a temporary file 
             asl::String tmpFilePath = asl::File::temp(".tar.gz").path();
-            int fd = open(*tmpFilePath, O_WRONLY);
-            r = archive_write_open_fd(a, fd);
+            //int fd = open(*tmpFilePath, O_WRONLY);
+            //r = archive_write_open_fd(a, fd);
+			r = archive_write_open_filename(a, *tmpFilePath);
 
             // Recursively add files to archive
             recursiveFileToArchive(a, dir, "");
             
             // Close archive
             archive_write_close(a);
-            archive_write_free(a);
-            close(fd);
-            sync();
+			archive_write_free(a);
 
-            // Read tmp archive into buffer
-            asl::File f(tmpFilePath, asl::File::READ);
-            asl::Array<byte> context = f.content();
+			// Read tmp archive into buffer
+			asl::File f(tmpFilePath, asl::File::READ);
+			asl::Array<byte> context = f.content();
+			            
+            //close(fd);
+            //sync();
+			
             f.close();
             f.remove();
             return context;
