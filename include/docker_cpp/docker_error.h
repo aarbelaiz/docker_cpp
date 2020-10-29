@@ -12,7 +12,7 @@ namespace docker_cpp {
             DockerError(dockErr code, const std::string& msg, int codeAPI);
             bool isOk();
             bool isError();
-            friend std::ostream& operator<<(std::ostream& os, const DockerError& err);
+            friend DOCKER_CPP_API std::ostream& operator<<(std::ostream& os, const DockerError& err);
 
             static DockerError D_OK();
             static DockerError D_INFO(const std::string& msg, int codeAPI);

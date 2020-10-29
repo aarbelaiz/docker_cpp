@@ -9,7 +9,6 @@
 #include <map>
 
 #include <cstring>
-//#include <type_traits>
 
 namespace docker_cpp
 {
@@ -34,8 +33,6 @@ namespace docker_cpp
 			std::ostringstream oss;
 			oss << std::boolalpha << value.first << "=" << value.second;
 			t = std::move(oss.str());
-		}else{
-			t = std::string();
 		}
 		s = s + (s.empty() || t.empty() ? "" : "&" ) + t;
 	}

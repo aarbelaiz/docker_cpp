@@ -13,7 +13,7 @@
 namespace docker_cpp
 {
 	template <typename T>
-	class DOCKER_CPP_API Docker
+	class Docker
 	{
 		typedef std::map<std::string, std::string> filter_map;
 		static_assert(std::is_base_of<DockerHttpInterface<T>, T>::value, "T must derive from DockerHttpInterface");
@@ -346,7 +346,7 @@ namespace docker_cpp
 		DockerError execCreateInstance(const std::string &id, const ExecConfig &config, std::string &execId)
 		{
 			const std::string url = _endpoint + "/containers/" + id + "/exec";
-			auto res = _net.post(url, config.str());
+			auto res = _net.post(url, config.json());
 			DockerError err = _checkError(res);
 			if (err.isError())
 				return err;
@@ -368,7 +368,7 @@ namespace docker_cpp
 		{
 			const std::string url = _endpoint + "/exec/" + id + "/start";
 			std::stringstream ss;
-			ss << std::boolalpha << "{\"detach\":\"" << detach << "\",\"tty\":" << tty << "\"}";
+			ss << std::boolalpha << "{\"detach\":" << detach << ",\"tty\":" << tty << "}";
 			return _checkError(_net.post(url, ss.str()));
 		}
 
@@ -432,7 +432,7 @@ namespace docker_cpp
 		DockerError volumesCreate(const VolumeBase &params, VolumeInfo &result)
 		{
 			std::string url = _endpoint + "/volumes/create";
-			return _checkAndParse(_net.post(url, params.str()), result);
+			return _checkAndParse(_net.post(url, params.json()), result);
 		}
 		
 		/**
@@ -478,17 +478,18 @@ namespace docker_cpp
 
 		bool checkConnection() { return this->ping().isOk(); }
 
-	private:
-		std::string _endpoint;
-		T _net;
-
 		template <typename U>
-		DockerError _checkAndParse(const asl::HttpResponse &res, U& d){
+		DockerError _checkAndParse(const asl::HttpResponse &res, U& d)
+		{
 			DockerError err = _checkError(res);
 			if (err.isError()) return err;
 			parse(res.json(), d);
 			return err;
 		}
+
+	private:
+		std::string _endpoint;
+		T _net;
 
 		DockerError _checkError(const asl::HttpResponse &res)
 		{
@@ -497,7 +498,7 @@ namespace docker_cpp
 			{
 				return DockerError::D_OK();
 			}
-			else if (code < 400)
+			else if (code >= 300 && code < 400)
 			{
 				std::string msg = *(res.json()["message"].toString());
 				return DockerError::D_INFO(msg, code);

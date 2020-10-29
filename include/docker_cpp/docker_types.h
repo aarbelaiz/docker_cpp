@@ -2,12 +2,10 @@
 #define _DOCKER_TYPES_H
 
 #include "export.h"
+#include "docker_types_json.h"
 
-#include <string>
-#include <sstream>
-#include <vector>
 #include <memory>
-#include <unordered_map>
+#include <cstdint>
 
 namespace docker_cpp
 {
@@ -30,6 +28,19 @@ namespace docker_cpp
         int sharedSize;
         std::vector<std::pair<std::string, std::string> > labels; //!< User-defined key/value strings
         int containers;
+
+        std::string json() const {
+            return "{" + toJson(std::make_pair("Id", id),
+            std::make_pair("ParentId", size),
+            std::make_pair("RepoTags", repoTags),
+            std::make_pair("RepoTags", repoTags),
+            std::make_pair("Created", created),
+            std::make_pair("Size", created),
+            std::make_pair("VirtualSize", created),
+            std::make_pair("SharedSize", created),
+            std::make_pair("Labels", labels),
+            std::make_pair("Container", containers)) + "}";
+        }
     };
 
     using ImageList = std::vector<ImageInfo>;
@@ -168,21 +179,18 @@ namespace docker_cpp
         */
         int startPeriod = 0;
 
-        std::string str() const {
-            std::stringstream ss;
-            ss << std::boolalpha << "{";
-            ss << "\"Test\":[";
-            for(auto &t: test){
-                ss << "\"" << t << "\"";
-                if (&t != &test.back()) ss << ",";
-            }
-            ss << "],";
-            ss << "\"Interval\":" << interval << ",";
-            ss << "\"Timeout\":" << timeout << ",";
-            ss << "\"Retries\":" << retries << ",";
-            ss << "\"StartPeriod\":" << startPeriod << "}";
-            return ss.str();
+        std::string json() const {
+            return "{" + toJson(std::make_pair("Test", test),
+            std::make_pair("Interval", interval),
+            std::make_pair("Timeout", timeout),
+            std::make_pair("Retries", retries),
+            std::make_pair("StartPeriod", startPeriod)) + "}";
         }
+    };
+
+    struct DOCKER_CPP_API Empty
+    {
+        std::string json() const { return ""; }
     };
 
     struct DOCKER_CPP_API ContainerConfig
@@ -193,7 +201,7 @@ namespace docker_cpp
         bool attachStdin = false; //!< Whether to attach to stdin.
         bool attachStdout = true; //!< Whether to attach to stdout.
         bool attachStdErr = true; //!< Whether to attach to stderr.
-        std::vector<std::string> exposedPorts; //!< An array of ports in the form "<port>/<tcp|udp|sctp>"
+        std::vector<std::pair<std::string, Empty>> exposedPorts; //!< An array of ports in the form "<port>/<tcp|udp|sctp>"
         bool tty = false; //!< Attach standard streams to a TTY, including stdin if it is not closed.
         bool openStdin = false; //!< Open stdin
         bool stdinOnce = false; //!< Close stdin after one attached client disconnects
@@ -202,7 +210,7 @@ namespace docker_cpp
         HealthConfig healthCheck; //!< A test to perform to check that the container is healthy.
         bool argsEscaped = true; //!< Command is already escaped (Windows only)
         std::string image = ""; //!< The name of the image to use when creating the container
-        std::vector<std::string> volumes; //!< An object mapping mount point paths inside the container to empty objects.
+        std::vector<std::pair<std::string, Empty>> volumes; //!< An object mapping mount point paths inside the container to empty objects.
         std::string workingDir = ""; //!< The working directory for commands to run in.
         std::vector<std::string> entrypoint; //!< The entry point for the container as a string or an array of strings. If the array consists of exactly one empty string ([""]) then the entry point is reset to system default (i.e., the entry point used by docker when there is no ENTRYPOINT instruction in the Dockerfile).
         bool networkDisabled = false; //!< Disable networking for the container.
@@ -215,83 +223,110 @@ namespace docker_cpp
         //TODO: HostConfig
         std::vector<std::pair<std::string, EndpointSettings> > endpointConfig; //!< A mapping of network name to endpoint configuration for that network.
 
-        std::string str() const {
-            std::stringstream ss;
-            ss << std::boolalpha << "{";
-            ss << "\"Hostname\":\"" << hostname << "\",";
-            ss << "\"DomainName\":\"" << domainName << "\",";
-            ss << "\"User\":\"" << user << "\",";
-            ss << "\"AttachStdin\":" << attachStdin << ",";
-            ss << "\"AttachStdout\":" << attachStdout << ",";
-            ss << "\"AttachStdErr\":" << attachStdErr << ",";
-            ss << "\"ExposedPorts\":{";
-            for(auto &p: exposedPorts) {
-                ss << "\"" << p << "\": {}";
-                if (&p != &exposedPorts.back()) ss << ",";
-            }
-            ss << "},";
-            ss << "\"Tty\":" << tty << ",";
-            ss << "\"OpenStdin\":" << openStdin << ",";
-            ss << "\"StdinOnce\":" << stdinOnce << ",";
-            ss << "\"Env\":[";
-            for(auto &e: env) {
-                ss << "\"" << e << "\"";
-                if (&e != &env.back()) ss << ",";
-            }
-            ss << "],";
-            ss << "\"Cmd\":[";
-            for(auto &c: cmd) {
-                ss << "\"" << c << "\"";
-                if (&c != &cmd.back()) ss << ",";
-            }
-            ss << "],";
-            ss << "\"HealthCheck\":" << healthCheck.str() << ",";
-            ss << "\"ArgsEscaped\":" << argsEscaped << ",";
-            ss << "\"Image\":\"" << image << "\",";
-            ss << "\"Volumes\":{";
-            for(auto &v: volumes) {
-                ss << "\"" << v << "\": {}";
-                if (&v != &volumes.back()) ss << ",";
-            }
-            ss << "},";
-            ss << "\"WorkingDir\":\"" << workingDir << "\",";
-            ss << "\"Entrypoint\":[";
-            for(auto &e: entrypoint) {
-                ss << "\"" << e << "\"";
-                if (&e != &entrypoint.back()) ss << ",";
-            }
-            ss << "],";
-            ss << "\"NetworkDisabled\":" << networkDisabled << ",";
-            ss << "\"MacAddress\":\"" << macAddress << "\",";
-            ss << "\"OnBuild\":[";
-            for(auto &e: onBuild) {
-                ss << "\"" << e << "\"";
-                if (&e != &onBuild.back()) ss << ",";
-            }
-            ss << "],";
-            if (!labels.empty()) {
-                ss << ",\"Labels\":{";
-                auto l_it = labels.begin();
-                while (l_it != labels.end()) {
-                    ss << "\"" << l_it->first << "\":\"" << l_it->second << "\"";
-                    l_it++;
-                    if (l_it != labels.end()) ss << ",";
-                }
-                ss << "},";
-            }
-            ss << "\"StopSignal\":\"" << stopSignal << "\",";
-            ss << "\"StopTimeout\":" << stopTimeout << ",";
-            ss << "\"Shell\":[";
-            for(auto &e: shell) {
-                ss << "\"" << e << "\"";
-                if (&e != &shell.back()) ss << ",";
-            }
-            ss << "]";
-            //TBD : HostConfig
-            //TBD : EndpointSettings
-            ss << "}";
-            return ss.str();
+        std::string json() const {
+            return "{" + toJson(std::make_pair("Hostname", hostname),
+            std::make_pair("DomainName", domainName),
+            std::make_pair("User", user),
+            std::make_pair("AttachStdin", attachStdin),
+            std::make_pair("AttachStdout", attachStdout),
+            std::make_pair("AttachStdErr", attachStdErr),
+            std::make_pair("ExposedPorts", exposedPorts),
+            std::make_pair("Tty", tty),
+            std::make_pair("Env", env),
+            std::make_pair("Cmd", cmd),
+            std::make_pair("HealthCheck", healthCheck),
+            std::make_pair("ArgsEscaped", argsEscaped),
+            std::make_pair("Image", image),
+            std::make_pair("Volumes", volumes),
+            std::make_pair("WorkingDir", workingDir),
+            std::make_pair("Entrypoint", entrypoint),
+            std::make_pair("NetworkDisabled", networkDisabled),
+            std::make_pair("MacAddress", macAddress),
+            std::make_pair("OnBuild", onBuild),
+            std::make_pair("Labels", labels),
+            std::make_pair("StopSignal", stopSignal),
+            std::make_pair("StopTimeout", stopTimeout),
+            std::make_pair("EndpointSettings", endpointConfig)
+            ) + "}";
         }
+
+        // std::string str() const {
+        //     std::stringstream ss;
+        //     ss << std::boolalpha << "{";
+        //     ss << "\"Hostname\":\"" << hostname << "\",";
+        //     ss << "\"DomainName\":\"" << domainName << "\",";
+        //     ss << "\"User\":\"" << user << "\",";
+        //     ss << "\"AttachStdin\":" << attachStdin << ",";
+        //     ss << "\"AttachStdout\":" << attachStdout << ",";
+        //     ss << "\"AttachStdErr\":" << attachStdErr << ",";
+        //     ss << "\"ExposedPorts\":{";
+        //     for(auto &p: exposedPorts) {
+        //         ss << "\"" << p << "\": {}";
+        //         if (&p != &exposedPorts.back()) ss << ",";
+        //     }
+        //     ss << "},";
+        //     ss << "\"Tty\":" << tty << ",";
+        //     ss << "\"OpenStdin\":" << openStdin << ",";
+        //     ss << "\"StdinOnce\":" << stdinOnce << ",";
+        //     ss << "\"Env\":[";
+        //     for(auto &e: env) {
+        //         ss << "\"" << e << "\"";
+        //         if (&e != &env.back()) ss << ",";
+        //     }
+        //     ss << "],";
+        //     ss << "\"Cmd\":[";
+        //     for(auto &c: cmd) {
+        //         ss << "\"" << c << "\"";
+        //         if (&c != &cmd.back()) ss << ",";
+        //     }
+        //     ss << "],";
+        //     ss << "\"HealthCheck\":" << healthCheck.json() << ",";
+        //     ss << "\"ArgsEscaped\":" << argsEscaped << ",";
+        //     ss << "\"Image\":\"" << image << "\",";
+        //     ss << "\"Volumes\":{";
+        //     for(auto &v: volumes) {
+        //         ss << "\"" << v << "\": {}";
+        //         if (&v != &volumes.back()) ss << ",";
+        //     }
+        //     ss << "},";
+        //     ss << "\"WorkingDir\":\"" << workingDir << "\",";
+        //     ss << "\"Entrypoint\":[";
+        //     for(auto &e: entrypoint) {
+        //         ss << "\"" << e << "\"";
+        //         if (&e != &entrypoint.back()) ss << ",";
+        //     }
+        //     ss << "],";
+        //     ss << "\"NetworkDisabled\":" << networkDisabled << ",";
+        //     ss << "\"MacAddress\":\"" << macAddress << "\",";
+        //     ss << "\"OnBuild\":[";
+        //     for(auto &e: onBuild) {
+        //         ss << "\"" << e << "\"";
+        //         if (&e != &onBuild.back()) ss << ",";
+        //     }
+        //     ss << "],";
+        //     if (!labels.empty()) {
+        //         ss << ",\"Labels\":{";
+        //         auto l_it = labels.begin();
+        //         while (l_it != labels.end()) {
+        //             ss << "\"" << l_it->first << "\":\"" << l_it->second << "\"";
+        //             l_it++;
+        //             if (l_it != labels.end()) ss << ",";
+        //         }
+        //         ss << "},";
+        //     }
+        //     ss << "\"StopSignal\":\"" << stopSignal << "\",";
+        //     ss << "\"StopTimeout\":" << stopTimeout << ",";
+        //     ss << "\"Shell\":[";
+        //     for(auto &e: shell) {
+        //         ss << "\"" << e << "\"";
+        //         if (&e != &shell.back()) ss << ",";
+        //     }
+        //     ss << "]";
+        //     //TBD : HostConfig
+        //     //TBD : EndpointSettings
+        //     ss << "}";
+        //     return ss.str();
+        // }
     };
 
     struct DOCKER_CPP_API ContainerCreateParams {
@@ -311,6 +346,7 @@ namespace docker_cpp
         std::string name;
         std::string version;
     };
+
     struct DOCKER_CPP_API VersionInfo {
         std::vector<Component> components;
         std::string version;
@@ -366,91 +402,58 @@ namespace docker_cpp
         std::string user; //!< The user, and optionally, group to run the exec process inside the container. Format is one of: user, user:group, uid, or uid:gid.
         std::string workingDirectory; //!< The working directory for the exec process inside the container.
 
-        std::string str() const {
-            std::stringstream ss;
-            ss << std::boolalpha;
-            ss << "{\"AttachStdin\":" << attachStdin << ",";
-            ss << "\"AttachStdout\":" << attachStdout << ",";
-            ss << "\"AttachStderr\":" << attachStderr << ",";
-            ss << "\"DetachKeys\":" << detachKeys << ",";
-            ss << "\"Tty\":" << tty << ",";
-            ss << "\"Env\": [";
-            for (auto &envVar : env) {
-                ss << "\"" << envVar << "\"";
-                if (&envVar != &env.back()) ss << ",";
-            }
-            ss << "],";
-            ss << "\"Cmd\": [";
-            for (auto &c : cmd) {
-                ss << "\"" << c << "\"";
-                if (&c != &cmd.back()) ss << ",";
-            }
-            ss << "],";
-            ss << "\"Privileged\":" << privileged << ",";
-            ss << "\"User\":" << user << ",";
-            ss << "\"WorkingDir\":" << workingDirectory << "}";
-            return ss.str();
-        };
+        std::string json() const {
+            return "{" + toJson(
+                std::make_pair("AttachStdin", attachStdin),
+                std::make_pair("AttachStdout", attachStdout),
+                std::make_pair("AttachStderr", attachStderr),
+                std::make_pair("DetachKeys", detachKeys),
+                std::make_pair("Tty", detachKeys),
+                std::make_pair("Env", env),
+                std::make_pair("Cmd", cmd),
+                std::make_pair("Privileged", privileged),
+                std::make_pair("User", user),
+                std::make_pair("WorkingDir", workingDirectory)
+                ) + "}";
+        }
     };
 
     /////////////// VOLUMES
 
-    struct VolumeBase {
+    struct DOCKER_CPP_API VolumeBase {
         std::string name; //!< Name of the volume.
         std::string driver = "local"; //!< Name of the volume driver used by the volume.
         std::unordered_map<std::string, std::string> driverOptions; //!< A mapping of driver options and values. These options are passed directly to the driver and are driver specific.
         std::unordered_map<std::string, std::string> labels; //!< User-defined key/value metadata.
 
-        std::string str() const {
-            std::stringstream ss;
-            ss << "{";
-            if (!name.empty()) ss << "\"Name\":" << name << ",";
-            ss << "\"Driver\":" << driver << ",";
-            if (!driverOptions.empty()) {
-                ss << ",\"DriverOptions\":{";
-                auto d_it = driverOptions.begin();
-                while (d_it != driverOptions.end()) {
-                    ss << "\"" << d_it->first << "\":\"" << d_it->second << "\"";
-                    d_it++;
-                    if (d_it != driverOptions.end()) ss << ",";
-                }
-                ss << "}";
-            }
-            if (!labels.empty()) {
-                ss << ",\"Labels\":{";
-                auto l_it = labels.begin();
-                while (l_it != labels.end()) {
-                    ss << "\"" << l_it->first << "\":\"" << l_it->second << "\"";
-                    l_it++;
-                    if (l_it != labels.end()) ss << ",";
-                }
-                ss << "}";
-            }
-            ss << "}";
-            return ss.str();
+        std::string json() const {
+            return "{" + toJson(std::make_pair("Name", name),
+            std::make_pair("Driver", driver),
+            std::make_pair("DriverOptions", driverOptions),
+            std::make_pair("Labels", labels)) + "}";
         }
     };
     
-    struct VolumeUsageData {
+    struct DOCKER_CPP_API VolumeUsageData {
         int size = -1; //!< Amount of disk space used by the volume (in bytes). This information is only available for volumes created with the "local" volume driver. For volumes created with other volume drivers, this field is set to -1 ("not available")
         int refCount = -1; //!< The number of containers referencing this volume. This field is set to -1 if the reference-count is not available.
     };
 
-    struct VolumeInfo : VolumeBase
+    struct DOCKER_CPP_API VolumeInfo : VolumeBase
     {
         std::string mountpoint; //!< Mount path of the volume on the host.
         std::string createdAt; //!< TODO: datetime -> Date/Time the volume was created.
         std::unordered_map<std::string, std::string> status; //!< Low-level details about the volume, provided by the volume driver. Details are returned as a map with key/value pairs: {"key":"value","key2":"value2"}. The Status field is optional, and is omitted if the volume driver does not support this feature.
         std::string scope = "local"; //!< ["local" | "global"] The level at which the volume exists. Either global for cluster-wide, or local for machine level. (default: "local")
-        std::unique_ptr<VolumeUsageData> usageData = nullptr; //!< Usage details about the volume. It can be null.
+        std::shared_ptr<VolumeUsageData> usageData = nullptr; //!< Usage details about the volume. It can be null.
     };
 
-    struct VolumeList {
+    struct DOCKER_CPP_API VolumeList {
         std::vector<VolumeInfo> volumes; //!< List of volumes
         std::vector<std::string> warnings; //!< Warnings that occurred when fetching the list of volumes
     };
     
-    struct DeletedVolumesInfo
+    struct DOCKER_CPP_API DeletedVolumesInfo
     {
         std::vector<std::string> volumesDeleted; //!< Volumes that were deleted
         int64_t spaceReclaimed; //!< Disk space reclaimed in bytes

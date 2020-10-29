@@ -1,5 +1,5 @@
 #ifdef _WIN32
-	#ifdef docker_cpp_EXPORTS
+	#ifdef docker_EXPORTS
 		#define DOCKER_CPP_API __declspec( dllexport )
 	#else
 		#define DOCKER_CPP_API __declspec( dllimport )

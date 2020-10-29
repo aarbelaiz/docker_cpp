@@ -22,6 +22,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(SRC 
     test_docker.cpp
+    test_docker_types.cpp
     test_docker_system.cpp
     test_docker_image.cpp
     test_docker_exec.cpp
