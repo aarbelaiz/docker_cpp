@@ -2,12 +2,9 @@
 #define _DOCKER_TYPES_H
 
 #include "export.h"
+#include "docker_types_json.h"
 
-#include <string>
-#include <sstream>
-#include <vector>
 #include <memory>
-#include <unordered_map>
 #include <cstdint>
 
 namespace docker_cpp
@@ -31,6 +28,19 @@ namespace docker_cpp
         int sharedSize;
         std::vector<std::pair<std::string, std::string> > labels; //!< User-defined key/value strings
         int containers;
+
+        std::string json() const {
+            return "{" + toJson(std::make_pair("Id", id),
+            std::make_pair("ParentId", size),
+            std::make_pair("RepoTags", repoTags),
+            std::make_pair("RepoTags", repoTags),
+            std::make_pair("Created", created),
+            std::make_pair("Size", created),
+            std::make_pair("VirtualSize", created),
+            std::make_pair("SharedSize", created),
+            std::make_pair("Labels", labels),
+            std::make_pair("Container", containers)) + "}";
+        }
     };
 
     using ImageList = std::vector<ImageInfo>;
@@ -143,6 +153,46 @@ namespace docker_cpp
 
     using ContainerList = std::vector<ContainerInfo>;
 
+    struct DOCKER_CPP_API HealthConfig {
+        /*! The test to perform.
+        Possible values are:
+            [] inherit healthcheck from image or parent image
+            ["NONE"] disable healthcheck
+            ["CMD", args...] exec arguments directly
+            ["CMD-SHELL", command] run command with system's default shell
+        */
+        std::vector<std::string> test;
+        /*! The time to wait between checks in nanoseconds.
+        It should be 0 or at least 1000000 (1 ms). 0 means inherit.
+        */
+        int interval = 0;
+        /*! The time to wait before considering the check to have hung.
+        It should be 0 or at least 1000000 (1 ms). 0 means inherit.
+        */
+        int timeout = 0;
+        /*! The number of consecutive failures needed to consider a container as unhealthy.
+        0 means inherit.
+        */
+        int retries = 0;
+        /*! Start period for the container to initialize before starting health-retries countdown in nanoseconds.
+        It should be 0 or at least 1000000 (1 ms). 0 means inherit.
+        */
+        int startPeriod = 0;
+
+        std::string json() const {
+            return "{" + toJson(std::make_pair("Test", test),
+            std::make_pair("Interval", interval),
+            std::make_pair("Timeout", timeout),
+            std::make_pair("Retries", retries),
+            std::make_pair("StartPeriod", startPeriod)) + "}";
+        }
+    };
+
+    struct DOCKER_CPP_API Empty
+    {
+        std::string json() const { return ""; }
+    };
+
     struct DOCKER_CPP_API ContainerConfig
     {
         std::string hostname = ""; //!< The hostname to use for the container, as a valid RFC 1123 hostname.
@@ -151,15 +201,16 @@ namespace docker_cpp
         bool attachStdin = false; //!< Whether to attach to stdin.
         bool attachStdout = true; //!< Whether to attach to stdout.
         bool attachStdErr = true; //!< Whether to attach to stderr.
-        std::vector<std::string> exposedPorts; //!< An array of ports in the form "<port>/<tcp|udp|sctp>"
+        std::vector<std::pair<std::string, Empty>> exposedPorts; //!< An array of ports in the form "<port>/<tcp|udp|sctp>"
         bool tty = false; //!< Attach standard streams to a TTY, including stdin if it is not closed.
         bool openStdin = false; //!< Open stdin
         bool stdinOnce = false; //!< Close stdin after one attached client disconnects
         std::vector<std::string> env; //!< A list of environment variables to set inside the container in the form ["VAR=value", ...]. A variable without = is removed from the environment, rather than to have an empty value.
         std::vector<std::string> cmd; //!< Command to run specified as an array of strings.
-        //TODO: HealthCheck
+        HealthConfig healthCheck; //!< A test to perform to check that the container is healthy.
         bool argsEscaped = true; //!< Command is already escaped (Windows only)
         std::string image = ""; //!< The name of the image to use when creating the container
+        std::vector<std::pair<std::string, Empty>> volumes; //!< An object mapping mount point paths inside the container to empty objects.
         std::string workingDir = ""; //!< The working directory for commands to run in.
         std::vector<std::string> entrypoint; //!< The entry point for the container as a string or an array of strings. If the array consists of exactly one empty string ([""]) then the entry point is reset to system default (i.e., the entry point used by docker when there is no ENTRYPOINT instruction in the Dockerfile).
         bool networkDisabled = false; //!< Disable networking for the container.
@@ -172,45 +223,123 @@ namespace docker_cpp
         //TODO: HostConfig
         std::vector<std::pair<std::string, EndpointSettings> > endpointConfig; //!< A mapping of network name to endpoint configuration for that network.
 
-        std::string str() {
-            std::stringstream ss;
-            ss << std::boolalpha << "{";
-            ss << "\"Hostname\":" << hostname << ",";
-            ss << "\"DomainName\":" << domainName << ",";
-            ss << "\"User\":" << user << ",";
-            ss << "\"AttachStdin\":" << attachStdin << ",";
-            ss << "\"AttachStdout\":" << attachStdout << ",";
-            ss << "\"AttachStdErr\":" << attachStdErr << ",";
-            ss << "\"ExposedPorts\":{";
-            for(auto &p: exposedPorts){
-                ss << "\"" << p << "\": {}";
-                if (&p != &exposedPorts.back()) ss << ",";
-            }
-            ss << "},";
-            ss << "\"Tty\":" << tty << ",";
-            ss << "\"OpenStdin\":" << openStdin << ",";
-            ss << "\"StdinOnce\":" << stdinOnce << ",";
-            ss << "\"Env\":[";
-            for(auto &e: env){
-                ss << "\"" << e << "\"";
-                if (&e != &env.back()) ss << ",";
-            }
-            ss << "],";
-            ss << "\"Cmd\":[";
-            for(auto &c: cmd){
-                ss << "\"" << c << "\"";
-                if (&c != &cmd.back()) ss << ",";
-            }
-            ss << "],";
-            ss << "\"ArgsEscaped\":" << argsEscaped << ",";
-            ss << "\"Image\":" << image << ",";
-            ss << "\"WorkingDir\":" << workingDir << ",";
-            ss << "\"Image\":" << image << ",";
-            ss << "}";
-            return ss.str();
+        std::string json() const {
+            return "{" + toJson(std::make_pair("Hostname", hostname),
+            std::make_pair("DomainName", domainName),
+            std::make_pair("User", user),
+            std::make_pair("AttachStdin", attachStdin),
+            std::make_pair("AttachStdout", attachStdout),
+            std::make_pair("AttachStdErr", attachStdErr),
+            std::make_pair("ExposedPorts", exposedPorts),
+            std::make_pair("Tty", tty),
+            std::make_pair("Env", env),
+            std::make_pair("Cmd", cmd),
+            std::make_pair("HealthCheck", healthCheck),
+            std::make_pair("ArgsEscaped", argsEscaped),
+            std::make_pair("Image", image),
+            std::make_pair("Volumes", volumes),
+            std::make_pair("WorkingDir", workingDir),
+            std::make_pair("Entrypoint", entrypoint),
+            std::make_pair("NetworkDisabled", networkDisabled),
+            std::make_pair("MacAddress", macAddress),
+            std::make_pair("OnBuild", onBuild),
+            std::make_pair("Labels", labels),
+            std::make_pair("StopSignal", stopSignal),
+            std::make_pair("StopTimeout", stopTimeout),
+            std::make_pair("EndpointSettings", endpointConfig)
+            ) + "}";
+        }
+
+        // std::string str() const {
+        //     std::stringstream ss;
+        //     ss << std::boolalpha << "{";
+        //     ss << "\"Hostname\":\"" << hostname << "\",";
+        //     ss << "\"DomainName\":\"" << domainName << "\",";
+        //     ss << "\"User\":\"" << user << "\",";
+        //     ss << "\"AttachStdin\":" << attachStdin << ",";
+        //     ss << "\"AttachStdout\":" << attachStdout << ",";
+        //     ss << "\"AttachStdErr\":" << attachStdErr << ",";
+        //     ss << "\"ExposedPorts\":{";
+        //     for(auto &p: exposedPorts) {
+        //         ss << "\"" << p << "\": {}";
+        //         if (&p != &exposedPorts.back()) ss << ",";
+        //     }
+        //     ss << "},";
+        //     ss << "\"Tty\":" << tty << ",";
+        //     ss << "\"OpenStdin\":" << openStdin << ",";
+        //     ss << "\"StdinOnce\":" << stdinOnce << ",";
+        //     ss << "\"Env\":[";
+        //     for(auto &e: env) {
+        //         ss << "\"" << e << "\"";
+        //         if (&e != &env.back()) ss << ",";
+        //     }
+        //     ss << "],";
+        //     ss << "\"Cmd\":[";
+        //     for(auto &c: cmd) {
+        //         ss << "\"" << c << "\"";
+        //         if (&c != &cmd.back()) ss << ",";
+        //     }
+        //     ss << "],";
+        //     ss << "\"HealthCheck\":" << healthCheck.json() << ",";
+        //     ss << "\"ArgsEscaped\":" << argsEscaped << ",";
+        //     ss << "\"Image\":\"" << image << "\",";
+        //     ss << "\"Volumes\":{";
+        //     for(auto &v: volumes) {
+        //         ss << "\"" << v << "\": {}";
+        //         if (&v != &volumes.back()) ss << ",";
+        //     }
+        //     ss << "},";
+        //     ss << "\"WorkingDir\":\"" << workingDir << "\",";
+        //     ss << "\"Entrypoint\":[";
+        //     for(auto &e: entrypoint) {
+        //         ss << "\"" << e << "\"";
+        //         if (&e != &entrypoint.back()) ss << ",";
+        //     }
+        //     ss << "],";
+        //     ss << "\"NetworkDisabled\":" << networkDisabled << ",";
+        //     ss << "\"MacAddress\":\"" << macAddress << "\",";
+        //     ss << "\"OnBuild\":[";
+        //     for(auto &e: onBuild) {
+        //         ss << "\"" << e << "\"";
+        //         if (&e != &onBuild.back()) ss << ",";
+        //     }
+        //     ss << "],";
+        //     if (!labels.empty()) {
+        //         ss << ",\"Labels\":{";
+        //         auto l_it = labels.begin();
+        //         while (l_it != labels.end()) {
+        //             ss << "\"" << l_it->first << "\":\"" << l_it->second << "\"";
+        //             l_it++;
+        //             if (l_it != labels.end()) ss << ",";
+        //         }
+        //         ss << "},";
+        //     }
+        //     ss << "\"StopSignal\":\"" << stopSignal << "\",";
+        //     ss << "\"StopTimeout\":" << stopTimeout << ",";
+        //     ss << "\"Shell\":[";
+        //     for(auto &e: shell) {
+        //         ss << "\"" << e << "\"";
+        //         if (&e != &shell.back()) ss << ",";
+        //     }
+        //     ss << "]";
+        //     //TBD : HostConfig
+        //     //TBD : EndpointSettings
+        //     ss << "}";
+        //     return ss.str();
+        // }
+    };
+
+    struct DOCKER_CPP_API ContainerCreateParams {
+        ContainerConfig config;
+        std::string str() const {
+            return config.str();
         }
     };
 
+    struct DOCKER_CPP_API ContainterCreateResult {
+        std::string id;
+        std::vector<std::string> warnings;
+    };
     //////////// SYSTEM
 
     struct DOCKER_CPP_API Component {
@@ -273,31 +402,20 @@ namespace docker_cpp
         std::string user; //!< The user, and optionally, group to run the exec process inside the container. Format is one of: user, user:group, uid, or uid:gid.
         std::string workingDirectory; //!< The working directory for the exec process inside the container.
 
-        std::string str() const {
-            std::stringstream ss;
-            ss << std::boolalpha;
-            ss << "{\"AttachStdin\":" << attachStdin << ",";
-            ss << "\"AttachStdout\":" << attachStdout << ",";
-            ss << "\"AttachStderr\":" << attachStderr << ",";
-            ss << "\"DetachKeys\":\"" << detachKeys << "\",";
-            ss << "\"Tty\":" << tty << ",";
-            ss << "\"Env\": [";
-            for (auto &envVar : env) {
-                ss << "\"" << envVar << "\"";
-                if (&envVar != &env.back()) ss << ",";
-            }
-            ss << "],";
-            ss << "\"Cmd\": [";
-            for (auto &c : cmd) {
-                ss << "\"" << c << "\"";
-                if (&c != &cmd.back()) ss << ",";
-            }
-            ss << "],";
-            ss << "\"Privileged\":" << privileged << ",";
-            ss << "\"User\":\"" << user << "\",";
-            ss << "\"WorkingDir\":\"" << workingDirectory << "\"}";
-            return ss.str();
-        };
+        std::string json() const {
+            return "{" + toJson(
+                std::make_pair("AttachStdin", attachStdin),
+                std::make_pair("AttachStdout", attachStdout),
+                std::make_pair("AttachStderr", attachStderr),
+                std::make_pair("DetachKeys", detachKeys),
+                std::make_pair("Tty", detachKeys),
+                std::make_pair("Env", env),
+                std::make_pair("Cmd", cmd),
+                std::make_pair("Privileged", privileged),
+                std::make_pair("User", user),
+                std::make_pair("WorkingDir", workingDirectory)
+                ) + "}";
+        }
     };
 
     /////////////// VOLUMES
@@ -308,33 +426,11 @@ namespace docker_cpp
         std::unordered_map<std::string, std::string> driverOptions; //!< A mapping of driver options and values. These options are passed directly to the driver and are driver specific.
         std::unordered_map<std::string, std::string> labels; //!< User-defined key/value metadata.
 
-        std::string str() const {
-            std::stringstream ss;
-            ss << "{";
-            if (!name.empty()) ss << "\"Name\":" << name << ",";
-            ss << "\"Driver\":" << driver << ",";
-            if (!driverOptions.empty()) {
-                ss << ",\"DriverOptions\":{";
-                auto d_it = driverOptions.begin();
-                while (d_it != driverOptions.end()) {
-                    ss << "\"" << d_it->first << "\":\"" << d_it->second << "\"";
-                    d_it++;
-                    if (d_it != driverOptions.end()) ss << ",";
-                }
-                ss << "}";
-            }
-            if (!labels.empty()) {
-                ss << ",\"Labels\":{";
-                auto l_it = labels.begin();
-                while (l_it != labels.end()) {
-                    ss << "\"" << l_it->first << "\":\"" << l_it->second << "\"";
-                    l_it++;
-                    if (l_it != labels.end()) ss << ",";
-                }
-                ss << "}";
-            }
-            ss << "}";
-            return ss.str();
+        std::string json() const {
+            return "{" + toJson(std::make_pair("Name", name),
+            std::make_pair("Driver", driver),
+            std::make_pair("DriverOptions", driverOptions),
+            std::make_pair("Labels", labels)) + "}";
         }
     };
     

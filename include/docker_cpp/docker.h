@@ -202,7 +202,19 @@ namespace docker_cpp
 			parse(data, result);
 			return err;
 		}
-		//DockerError createContainer(const std::string &name);
+		
+		/**
+		 * Create a container.
+		 * @param [in] name Name of the container
+		 * @param [in] p Container creation paramaters
+		 * @returns DockerError
+		 */
+		DockerError containerCreate(const std::string &name, const ContainerCreateParams &p, ContainterCreateResult &r)
+		{
+			std::string url = _endpoint + "/containers/create";
+			url += query_params(q_arg("name", name));
+			return _checkAndParse(_net.post(url, p.str(), {{"Content-Type", "application/json"}}), r);
+		}
 
 		/**
 		 * Start a container.
@@ -334,7 +346,7 @@ namespace docker_cpp
 		DockerError execCreateInstance(const std::string &id, const ExecConfig &config, std::string &execId)
 		{
 			const std::string url = _endpoint + "/containers/" + id + "/exec";
-			auto res = _net.post(url, config.str());
+			auto res = _net.post(url, config.json());
 			DockerError err = _checkError(res);
 			if (err.isError())
 				return err;
@@ -420,7 +432,7 @@ namespace docker_cpp
 		DockerError volumesCreate(const VolumeBase &params, VolumeInfo &result)
 		{
 			std::string url = _endpoint + "/volumes/create";
-			return _checkAndParse(_net.post(url, params.str()), result);
+			return _checkAndParse(_net.post(url, params.json()), result);
 		}
 		
 		/**

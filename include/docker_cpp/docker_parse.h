@@ -9,7 +9,7 @@ namespace asl {
 }
 
 namespace docker_cpp
-{
+{   
     void DOCKER_CPP_API parse(const asl::Var &in, ImageList &out);
     void DOCKER_CPP_API parse(const asl::Var &in, DeletedImageList &out);
     void DOCKER_CPP_API parse(const asl::Var &in, PruneInfo &out);
@@ -22,6 +22,7 @@ namespace docker_cpp
     void DOCKER_CPP_API parse(const asl::Var &in, VolumeList &out);
     void DOCKER_CPP_API parse(const asl::Var &in, VolumeInfo &out);
     void DOCKER_CPP_API parse(const asl::Var &in, DeletedVolumesInfo &out);
+    void DOCKER_CPP_API parse(const asl::Var &in, ContainterCreateResult &out);
 } // namespace docker_cpp
 
 

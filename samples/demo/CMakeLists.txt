@@ -24,3 +24,5 @@ set_target_properties( ${TARGET} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
 
 add_executable(manage_image manage_images.cpp)
 target_link_libraries (manage_image PRIVATE docker_cpp::docker asls LibArchive::LibArchive)
+set_target_properties( manage_image PROPERTIES FOLDER samples)
+set_target_properties( manage_image PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
