@@ -101,6 +101,13 @@ namespace docker_cpp
         std::string ipV4Address;
         std::string ipV6Address;
         std::vector<std::string> linkLocalIps;
+
+        std::string json() const {
+            return "{" + toJson(std::make_pair("IpV4Address", ipV4Address),
+            std::make_pair("IpV6Address", ipV6Address),
+            std::make_pair("IpV6Address", ipV6Address),
+            std::make_pair("LinkLocalIps", linkLocalIps)) + "}";
+        }
     };
 
     struct DOCKER_CPP_API EndpointSettings {
@@ -117,6 +124,23 @@ namespace docker_cpp
         std::int64_t globalIpV6PrefixLen; //!< Mask length of the global IPv6 address.
         std::string macAddress; //!< MAC address for the endpoint on this network.
         std::vector<std::pair<std::string, std::string> > driverOpts; // DriverOpts is a mapping of driver options and values. These options are passed directly to the driver and are driver specific.
+
+        std::string json() const {
+            return "{" + toJson(std::make_pair("IpamConfig", ipamConfig),
+            std::make_pair("Links", links),
+            std::make_pair("Aliases", aliases),
+            std::make_pair("NetworkID", networkID),
+            std::make_pair("EndpointID", endpointID),
+            std::make_pair("NetworkID", networkID),
+            std::make_pair("Gateway", gateway),
+            std::make_pair("IpAddress", ipAddress),
+            std::make_pair("IpPrefixLen", ipPrefixLen),
+            std::make_pair("IpV6Gateway", ipV6Gateway),
+            std::make_pair("GlobalIpV6Address", globalIpV6Address),
+            std::make_pair("GlobalIpV6PrefixLen", globalIpV6PrefixLen),
+            std::make_pair("MacAddress", macAddress),
+            std::make_pair("DriverOpts", driverOpts)) + "}";
+        }
     };
 
     //Configuration for a network endpoint.
@@ -190,7 +214,9 @@ namespace docker_cpp
 
     struct DOCKER_CPP_API Empty
     {
-        std::string json() const { return ""; }
+        Empty(){};
+        Empty(const char* e){};
+        std::string json() const { return "{}"; }
     };
 
     struct DOCKER_CPP_API ContainerConfig
@@ -201,7 +227,7 @@ namespace docker_cpp
         bool attachStdin = false; //!< Whether to attach to stdin.
         bool attachStdout = true; //!< Whether to attach to stdout.
         bool attachStdErr = true; //!< Whether to attach to stderr.
-        std::vector<std::pair<std::string, Empty>> exposedPorts; //!< An array of ports in the form "<port>/<tcp|udp|sctp>"
+        std::unordered_map<std::string, Empty> exposedPorts; //!< An object as a map ports in the form "<port>/<tcp|udp|sctp>"
         bool tty = false; //!< Attach standard streams to a TTY, including stdin if it is not closed.
         bool openStdin = false; //!< Open stdin
         bool stdinOnce = false; //!< Close stdin after one attached client disconnects
@@ -210,13 +236,13 @@ namespace docker_cpp
         HealthConfig healthCheck; //!< A test to perform to check that the container is healthy.
         bool argsEscaped = true; //!< Command is already escaped (Windows only)
         std::string image = ""; //!< The name of the image to use when creating the container
-        std::vector<std::pair<std::string, Empty>> volumes; //!< An object mapping mount point paths inside the container to empty objects.
+        std::unordered_map<std::string, Empty> volumes; //!< An object mapping mount point paths inside the container to empty objects.
         std::string workingDir = ""; //!< The working directory for commands to run in.
         std::vector<std::string> entrypoint; //!< The entry point for the container as a string or an array of strings. If the array consists of exactly one empty string ([""]) then the entry point is reset to system default (i.e., the entry point used by docker when there is no ENTRYPOINT instruction in the Dockerfile).
         bool networkDisabled = false; //!< Disable networking for the container.
         std::string macAddress; //!< MAC address of the container.
         std::vector<std::string> onBuild; //!< ONBUILD metadata that were defined in the image's Dockerfile.
-        std::vector<std::pair<std::string, std::string> > labels; //!< User-defined key/value metadata.
+        std::unordered_map<std::string, std::string> labels; //!< User-defined key/value metadata.
         std::string stopSignal = "SIGTERM"; //!< Signal to stop a container as a string or unsigned integer.
         int stopTimeout = 10; //!< Timeout to stop a container in seconds.
         std::vector<std::string> shell; //!< Shell for when RUN, CMD, and ENTRYPOINT uses a shell.
@@ -331,8 +357,9 @@ namespace docker_cpp
 
     struct DOCKER_CPP_API ContainerCreateParams {
         ContainerConfig config;
-        std::string str() const {
-            return config.str();
+
+        std::string json() const {
+            return config.json();
         }
     };
 

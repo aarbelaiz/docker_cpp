@@ -98,7 +98,7 @@ int main()
     params.config.cmd = { "python3", "--version" };
     //params.config.cmd = { "echo", "'hello'" };
     params.config.argsEscaped = false;
-    params.config.exposedPorts = { "80/tcp" };
+    params.config.exposedPorts = {{ {"80/tcp", ""} }};
 	params.config.entrypoint = { "" }; // Reset
 	DockerError err = docker.containerCreate("dummy_container", params, createResult);
 	if (err.isError()) {

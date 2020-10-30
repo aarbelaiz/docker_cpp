@@ -3,6 +3,7 @@
 #include <sstream>
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 #include <iostream>
 
@@ -14,11 +15,20 @@ namespace docker_cpp {
             std::is_same<const char *, typename std::decay<T>::type>::value ||
             std::is_same<std::string, typename std::decay<T>::type>::value> {};
 
-    template <typename T, typename std::enable_if<std::is_arithmetic<T>{} || is_string<T>{}, int>::type = 0> // numerical
+    template <typename T, typename std::enable_if<std::is_arithmetic<T>{}, int>::type = 0> // numerical
     inline std::string to_json(const T &in)
     {
         std::stringstream ss;
         ss << std::boolalpha << in;
+        return ss.str();
+    };
+
+
+    template <typename T, typename std::enable_if<is_string<T>{}, int>::type = 0> // numerical
+    inline std::string to_json(const T &in)
+    {
+        std::stringstream ss;
+        ss << std::boolalpha << "\"" << in << "\"";
         return ss.str();
     };
 
@@ -39,6 +49,12 @@ namespace docker_cpp {
         return ss.str();
     }
 
+    template <typename T, typename std::enable_if<std::is_class<T>{} && !is_string<T>{}, int>::type = 0>
+    inline std::string to_json(const T &in){ return in.json(); }
+
+    template <typename T>
+    inline std::string to_json(const std::shared_ptr<T> &in) { return to_json(*in); }
+
     template <typename S, typename T, typename std::enable_if<is_string<S>{}, int>::type = 0>
     inline std::string to_json(const std::unordered_map<S, T> &in)
     {
@@ -52,12 +68,6 @@ namespace docker_cpp {
         return ss.str();
     }
 
-    template <typename T, typename std::enable_if<std::is_class<T>::value>::type>
-    inline std::string to_json(const T &in)
-    {
-        std::cout << "TBD!!" << std::endl;
-        return in.json();
-    }
 
     template <typename S, typename T,
               typename std::enable_if<is_string<S>{}, int>::type = 0>
@@ -78,11 +88,18 @@ namespace docker_cpp {
         return ss.str();
     }
 
-    template <typename T1, typename S, typename std::enable_if<is_string<S>{}, int>::type = 0>
-    std::string toJson(const std::pair<S, T1> &var)
+    template <typename S, typename K, typename T, typename std::enable_if<is_string<S>{}, int>::type = 0>
+    std::string to_json(const S &name, const std::unordered_map<K, T> &in)
     {
-        return to_json(var.first, var.second);
+        std::stringstream ss;
+        ss << std::boolalpha << "\"" << name << "\":{";
+        ss << to_json(in);
+        ss << "}";
+        return ss.str();
     }
+
+    template <typename T1, typename S, typename std::enable_if<is_string<S>{}, int>::type = 0>
+    std::string toJson(const std::pair<S, T1> &var) { return to_json(var.first, var.second); }
 
     template <typename T1, typename... Tn, typename S, typename std::enable_if<is_string<S>{}, int>::type = 0>
     std::string toJson(const std::pair<S, T1> &var, const Tn &... args)

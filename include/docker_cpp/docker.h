@@ -213,7 +213,7 @@ namespace docker_cpp
 		{
 			std::string url = _endpoint + "/containers/create";
 			url += query_params(q_arg("name", name));
-			return _checkAndParse(_net.post(url, p.str(), {{"Content-Type", "application/json"}}), r);
+			return _checkAndParse(_net.post(url, p.json(), {{"Content-Type", "application/json"}}), r);
 		}
 
 		/**

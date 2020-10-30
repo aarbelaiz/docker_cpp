@@ -96,7 +96,7 @@ namespace docker_cpp
 		{
 			asl::Dic<> asl_hs;
 			for (auto &h: headers) { asl_hs = asl_hs(asl::String(h.first.c_str()), asl::String(h.second.c_str())); }
-			//std::cout << *body << std::endl;
+			std::cout << *body << std::endl;
 			return asl::Http::post(asl::String(uri.c_str()), body, asl_hs);
 		};
 
